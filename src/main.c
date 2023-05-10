@@ -1,47 +1,34 @@
 #include <avr/io.h>
 #include <util/delay.h>
-#include <stdio.h>
 
-#define MOTOR_STEP_PIN PB0
-#define MOTOR_DIR_PIN PB1
+#define stepPin 5
+#define dirPin 2
+//#define enPin 8
 
-void step_pulse (void);
-void move_stepper_motor (uint16_t,uint8_t);
+int main(void)
+{
+    DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin and stepPin as output
+    DDRB |= (1 << DDB0); // Set enPin as output
+    //PORTB &= ~(1 << PORTB0); // Set enPin LOW to enable the driver
 
-int main(void) {
-    //set motor control pins as output
-    DDRB |=(1<<MOTOR_STEP_PIN)|(1<<MOTOR_DIR_PIN);
-
-    while(1){
-        //Rotate motor clockwise for 200 steps
-        move_stepper_motor(200,1);
-        _delay_ms(500);
-
-        //Rotate motor counter-clockwise for 200 steps
-        move_stepper_motor(200,0);
-        _delay_ms(500);
+    while (1) {
+        /*clockwise movement
+        PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+        for (int x = 0; x < 800; x++) {
+            PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(500);
+            PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(500);
+        }
+        _delay_ms(1000); // One second delay*/
+        PORTD &= ~(1 << PORTD2); // Set dirPin LOW to change direction of rotation
+        for (int x = 0; x < 800; x++) {
+            PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(500);
+            PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(500);
+        }
+        _delay_ms(1000);
     }
-}
-
-void step_pulse(){
-    PORTB |= (1<<MOTOR_STEP_PIN);
-    _delay_us(2);
-    PORTB &= ~(1<<MOTOR_STEP_PIN);
-    _delay_us(2);
-}
-
-void move_stepper_motor (uint16_t steps,uint8_t direction){
-    //Set direction pin to high or low
-    if(direction){
-        PORTB|=(1<<MOTOR_DIR_PIN);
-    }
-    else{
-        PORTB &= ~(1<<MOTOR_DIR_PIN);
-    }
-
-    //Send pulses to the step pin to move the motor
-    for (int i =0; i<steps; i++){
-        step_pulse();
-        _delay_us(200); //adjust this delay to control speed
-    }
+    return 0;
 }
