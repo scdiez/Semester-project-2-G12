@@ -15,12 +15,10 @@ void move_down(uint16_t);
 int main(void)
 {
     DDRD |= (1 << DDD4) | (1 << DDD6) | (1 << DDD2) | (1 << DDD5); // Set dirPin and stepPin as output
-    DDRB |= (1 << DDB0); // Set enPin as output
-    PORTB &= ~(1 << PORTB0); // Set enPin LOW to enable the driver
-    DDRB |= (1 << DDB1); // Set enPin as output
-    PORTB &= ~(1 << PORTB1); // Set enPin LOW to enable the driver
     while (1) {
         move_right(800);
+        _delay_ms(1000);
+        move_left(800);
     }
 }
 void move_right(uint16_t r_steps){
