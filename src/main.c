@@ -1,7 +1,7 @@
 #include <usart.h>
 #include <avr/io.h>
 #include <util/delay.h>
-#define F_CPU 16000000ul
+#define F_CPU 16000000UL
 
 //DEFINE BAUDRATE AS 9600
 
