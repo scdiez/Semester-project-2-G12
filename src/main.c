@@ -11,6 +11,7 @@ int randnumy (void);
 int target_x,target_y;
 int current_x=0;
 int current_y=0;
+int bla;
 
 int main(void) {
     srand(0);
