@@ -5,26 +5,30 @@
 #include "i2cmaster.h"
 #include "lcd.h"
 #include "usart.h"
+#include <time.h>
 
-int randnumx (void);
-int randnumy (void);
 int target_x,target_y;
 int current_x=0;
-int current_y=0;
-int bla;
+int current_y=0;;
 
 int main(void) {
-    srand(0);
-    printf("%d \n", target_x);
-    printf("%d \n", target_y);
-}
+    uart_init();
+    io_redirect();
 
-int randnumx (void){
-    target_x = rand()%50; //generate number for position SET LIMITS ONCE TESTED
-    return target_x;
-}
-
-int randnumy (void){
-    target_y = rand()%50; //generate number for position SET LIMITS ONCE TESTED
-    return target_y;
+    srand(time(0));
+    target_x = rand() % 50;
+    target_y = rand() % 50;
+    
+    printf("Target x: %d \n", target_x);
+    printf("Target y: %d \n", target_y);
+    target_x = rand() % 50;
+    target_y = rand() % 50,
+    
+    printf("Target x: %d \n", target_x);
+    printf("Target y: %d \n", target_y);
+    target_x = rand() % 50;
+    target_y = rand() % 50,
+    
+    printf("Target x: %d \n", target_x);
+    printf("Target y: %d \n", target_y);
 }
