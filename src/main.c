@@ -5,18 +5,18 @@
 
 #define stepPin 5
 #define dirPin 2
-#define enPin 8
+//#define enPin 8
 
 int main(void)
 {
     //uart_init();
     //io_redirect();
-    DDRD |= (1 << DDD2) | (1 << DDD5) |  (1 << DDD4); // Set dirpin and stepPin as output
-    DDRB |= (1 << DDB0); // Set enPin as output
-    PORTB &= ~(1 << PORTB0); // Set enPin LOW to enable the driver
+    DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirpin and stepPin as output
+    //DDRB |= (1 << DDB0); // Set enPin as output
+    //PORTB &= ~(1 << PORTB0); // Set enPin LOW to enable the driver
 
     while (1) {
-        //PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+        PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
         //printf("Clockwise \n");
         for (int x = 0; x < 1600; x++) {
             PORTD |= (1 << PORTD5); // Set stepPin HIGH
