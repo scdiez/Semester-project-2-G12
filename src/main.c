@@ -1,34 +1,44 @@
 #include <avr/io.h>
-#include <stdio.h>
 #include <util/delay.h>
-#include <stdlib.h>
-#include "i2cmaster.h"
-#include "lcd.h"
-#include "usart.h"
-#include <time.h>
 
-int target_x,target_y;
-int current_x=0;
-int current_y=0;;
+#define stepPin 5
+#define dirPin 2
+#define stepPin2 6
+#define dirPin2 4
 
-int main(void) {
-    uart_init();
-    io_redirect();
+void move_right(int, int);
+void move_left(int, int);
 
-    srand(time(0));
-    target_x = rand() % 50;
-    target_y = rand() % 50;
-    
-    printf("Target x: %d \n", target_x);
-    printf("Target y: %d \n", target_y);
-    target_x = rand() % 50;
-    target_y = rand() % 50,
-    
-    printf("Target x: %d \n", target_x);
-    printf("Target y: %d \n", target_y);
-    target_x = rand() % 50;
-    target_y = rand() % 50,
-    
-    printf("Target x: %d \n", target_x);
-    printf("Target y: %d \n", target_y);
+int main(void)
+{
+    DDRD = 0b001110100; // Set dirPin and stepPin as output
+
+    while (1) {
+			PORTD = 0b00010100;
+			move_right(800, 500);
+			PORTD = 0b00000000;
+			move_left(800, 500);
+        }
+
+
+    return 0;
+}
+
+void move_right(int steps, int delay){
+	 //PORTD = 0b00010100; // Set dirPin HIGH to move in a particular direction
+        for (int x = 0; x < steps; x++) {
+            PORTD = 0b01100000;// Set stepPin HIGH
+            _delay_us(delay);
+            PORTD = 0b00000000;; // Set stepPin LOW
+            _delay_us(delay);
+        }
+}
+void move_left(int steps, int delay){
+ 	//PORTD = 0b00000000; // Set dirPin LOW to change direction of rotation
+        for (int x = 0; x < steps; x++) {
+            PORTD = 0b01100000;// Set stepPin HIGH
+            _delay_us(delay);
+            PORTD = 0b00000000;; // Set stepPin LOW
+            _delay_us(delay);
+        }
 }
