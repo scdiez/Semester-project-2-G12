@@ -24,19 +24,23 @@ void move_left(int, int);
 void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
+void change_position(void);
+void zero(void);
 
 //variables for sensor
 volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
 volatile unsigned long pulse_duration;
 volatile int distance;
-int flag;
+int flag=0;
 int score = 0;
+int sensor_counter= 0;
+int attempt = 0;
 
 //variables for motor movement 
 int target_x,target_y, move_x, move_y;
 int current_x=0;
-int current_y=0;;
+int current_y=0;
 
 int main(void) {
 	sei(); // Enable global interrupts
@@ -52,51 +56,31 @@ int main(void) {
 
 
 	//SPEAKER "PRESS A BUTTON TO PLAY" 
-	//move hoop to 0,0
-	move_down(100, 500);
-	move_left(100, 500);
+	zero();
 
-	//IF BUTTON 1 IS PRESSED
+	// BUTTON 1 IS PRESSED {
 	//SPEAKER "You've selected no vision single player"
 	//SPEAKER "The basketball hoop will now move and make a sound at its final position, try to put the ball inside it"
+	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
+	change_position();
+	for (attempt, attempt<=2, attempt++){
+		//for motion sensor
+		while(flag == 0){
+		PORTD &= ~(1 << PORTD2); // Clears the trigPin
+		_delay_us(2);
+		PORTD |= (1 << PORTD2);
+		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
+		PORTD &= ~(1 << PORTD2);
 
-    srand(time(0));
-    target_x = rand() % 50;
-    target_y = rand() % 50;
-    
-	move_x = target_x - current_x;
-	move_y = target_y - current_y;
+		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
 
-	if (move_x>0){
-		move_right(move_x, 400);
-	}
-	if (move_x<0){
-		move_left(move_x, 400);
-	}
-	if (move_y>0){
-		move_right(move_y, 400);
-	}
-	if (move_y<0){
-		move_left(move_y, 400);
-	}
-	
-	while(flag == 0){
-        PORTD &= ~(1 << PORTD2); // Clears the trigPin
-        _delay_us(2);
-        PORTD |= (1 << PORTD2);
-        _delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
-        PORTD &= ~(1 << PORTD2);
+		start_pulse(); // Record the start time of the pulse
+		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+		end_pulse(); // Record the end time of the pulse
+		TCCR1B = 0;  // Stop Timer/Counter1
 
-        while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
-        TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
-
-        start_pulse(); // Record the start time of the pulse
-        while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
-        end_pulse(); // Record the end time of the pulse
-        TCCR1B = 0;  // Stop Timer/Counter1
-
-        distance = pulse_duration * 0.034 / 2; // Calculate the distance
-
+		distance = pulse_duration * 0.034 / 2; // Calculate the distance
 
         //Check if an object is dtetected within the desired range
         if (distance < 30) {
@@ -104,14 +88,19 @@ int main(void) {
 			score++; //Incremement the score when an object is detected
 			//SPEAKER "You scored a point"
 			//SPEAKER "Current score: score points"
-		}
-
+		attempt=0; 
+		change_position();
+		} else if (distance>30){
+		flag = 1; 
+		// SPEAKER "You missed, Try again" 
+		//SPEAKER BEEP
+	}
 	}
 	flag = 0;
-
-	//SPEAKER "Beep"
-
-
+	}
+	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
+	zero();
+// } END OF BUTTON ONE PRESSED ONCE IF STATEMENT
 
 }
 
@@ -173,6 +162,53 @@ void move_down(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
+void change_position(void){
+	srand(time(0));
+    target_x = rand() % 50;
+    target_y = rand() % 50;
+    
+	move_x = target_x - current_x;
+	move_y = target_y - current_y;
+
+	if (move_x>0){
+		move_right(move_x, 400);
+		// SPEAKER "beep"
+	}
+	if (move_x<0){
+		move_left(move_x, 400);
+		// SPEAKER "beep"
+	}
+	if (move_y>0){
+		move_right(move_y, 400);
+		// SPEAKER "beep"
+	}
+	if (move_y<0){
+		move_left(move_y, 400);
+		// SPEAKER "beep"
+	}
+}
+
+//Using max steps 500,500
+void zero(void){
+	move_x = 0 - current_x;
+	move_y = 0 - current_y;
+
+	if (move_x>0){
+		move_right(move_x, 400);
+		// SPEAKER "beep"
+	}
+	if (move_x<0){
+		move_left(move_x, 400);
+		// SPEAKER "beep"
+	}
+	if (move_y>0){
+		move_right(move_y, 400);
+		// SPEAKER "beep"
+	}
+	if (move_y<0){
+		move_left(move_y, 400);
+		// SPEAKER "beep"
+	}
 }
 
 
