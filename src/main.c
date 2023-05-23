@@ -63,7 +63,7 @@ int main(void) {
 	//SPEAKER "The basketball hoop will now move and make a sound at its final position, try to put the ball inside it"
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
 	change_position();
-	for (attempt, attempt<=2, attempt++){
+	while (attempt<=2){
 		//for motion sensor
 		while(flag == 0){
 		PORTD &= ~(1 << PORTD2); // Clears the trigPin
@@ -94,8 +94,9 @@ int main(void) {
 		flag = 1; 
 		// SPEAKER "You missed, Try again" 
 		//SPEAKER BEEP
-	}
-	}
+		attempt ++;
+		}
+		}
 	flag = 0;
 	}
 	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
@@ -162,6 +163,7 @@ void move_down(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
+}
 void change_position(void){
 	srand(time(0));
     target_x = rand() % 50;
