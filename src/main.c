@@ -57,10 +57,18 @@ int main(void) {
 
 	//SPEAKER "PRESS A BUTTON TO PLAY" 
 	zero();
+	
+	//BUTTON 1 IS PRESSED TWICE { 
+	if(score=0){
+		// SPEAKER " Your final score is 0. Better luck next time" 
+	} else{
+		// SPEAKER " Congrats! Your final score is score points. 
+	}
+	//} END OF BUTTON 1 PRESSED TWICE
 
 	// BUTTON 1 IS PRESSED {
-	//SPEAKER "You've selected no vision single player"
-	//SPEAKER "The basketball hoop will now move and make a sound at its final position, try to put the ball inside it"
+	//SPEAKER "You've selected vision single player"
+	//SPEAKER "The basketball hoop will now move. You get 3 attempts to score."
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
 	change_position();
 	while (attempt<=2){
@@ -93,7 +101,6 @@ int main(void) {
 		} else if (distance>30){
 		flag = 1; 
 		// SPEAKER "You missed, Try again" 
-		//SPEAKER BEEP
 		attempt ++;
 		}
 		}
@@ -102,6 +109,53 @@ int main(void) {
 	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
 	zero();
 // } END OF BUTTON ONE PRESSED ONCE IF STATEMENT
+
+	// BUTTON 3 IS PRESSED {
+	//SPEAKER "You've selected no vision single player"
+	//SPEAKER "The basketball hoop will now move and make a sound at its final position, try to put the ball inside it"
+	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
+	change_position();
+	// SPEAKER "beep"
+	while (attempt<=2){
+		//for motion sensor
+		while(flag == 0){
+		PORTD &= ~(1 << PORTD2); // Clears the trigPin
+		_delay_us(2);
+		PORTD |= (1 << PORTD2);
+		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
+		PORTD &= ~(1 << PORTD2);
+
+		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
+
+		start_pulse(); // Record the start time of the pulse
+		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+		end_pulse(); // Record the end time of the pulse
+		TCCR1B = 0;  // Stop Timer/Counter1
+
+		distance = pulse_duration * 0.034 / 2; // Calculate the distance
+
+        //Check if an object is dtetected within the desired range
+        if (distance < 30) {
+			flag =1;
+			score++; //Incremement the score when an object is detected
+			//SPEAKER "You scored a point"
+			//SPEAKER "Current score: score points"
+		attempt=0; 
+		change_position();
+		// SPEAKER "beep"
+		} else if (distance>30){
+		flag = 1; 
+		// SPEAKER "You missed, Try again" 
+		//SPEAKER "beep"
+		attempt ++;
+		}
+		}
+	flag = 0;
+	}
+	//SPEAKER " You have used all your attempts. Press Button 3 if you want to start playing again" 
+	zero();
+// } END OF BUTTON THREE PRESSED ONCE IF STATEMENT
 
 }
 
@@ -174,19 +228,15 @@ void change_position(void){
 
 	if (move_x>0){
 		move_right(move_x, 400);
-		// SPEAKER "beep"
 	}
 	if (move_x<0){
 		move_left(move_x, 400);
-		// SPEAKER "beep"
 	}
 	if (move_y>0){
 		move_right(move_y, 400);
-		// SPEAKER "beep"
 	}
 	if (move_y<0){
 		move_left(move_y, 400);
-		// SPEAKER "beep"
 	}
 }
 
@@ -197,19 +247,16 @@ void zero(void){
 
 	if (move_x>0){
 		move_right(move_x, 400);
-		// SPEAKER "beep"
+		
 	}
 	if (move_x<0){
 		move_left(move_x, 400);
-		// SPEAKER "beep"
 	}
 	if (move_y>0){
 		move_right(move_y, 400);
-		// SPEAKER "beep"
 	}
 	if (move_y<0){
 		move_left(move_y, 400);
-		// SPEAKER "beep"
 	}
 }
 
