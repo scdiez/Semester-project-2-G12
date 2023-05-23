@@ -8,24 +8,48 @@
 #include "lcd.h"
 #include "usart.h"
 #include <time.h>
+#include <avr/interrupt.h>
 
+#define F_CPU 16000000UL //DEFINE BAUDRATE AS 9600
+
+#define trigPin 2
+#define echopin 4
+
+//functions for sensor 
+void start_pulse();
+void end_pulse();
+
+//functions for motor movement
 void move_left(int, int);
 void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
 
-volatile int delay;
+//variables for sensor
+volatile unsigned long pulse_start;
+volatile unsigned long pulse_end;
+volatile unsigned long pulse_duration;
+volatile int distance;
+int flag;
+int score = 0;
 
+//variables for motor movement 
 int target_x,target_y, move_x, move_y;
 int current_x=0;
 int current_y=0;;
 
 int main(void) {
+	sei(); // Enable global interrupts
     uart_init();
     io_redirect();
 
-	DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin and stepPin as output
-	DDRD |= (1 << DDD2) | (1 << DDD5);
+	DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
+	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
+
+	DDRD |= (1 << DDD2); //Set trig pin to output
+    DDRD &= ~(1 << DDD4); // Set echoPin as an input
+    PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
+
 
 	//SPEAKER "PRESS A BUTTON TO PLAY" 
 	//move hoop to 0,0
@@ -56,10 +80,48 @@ int main(void) {
 		move_left(move_y, 400);
 	}
 	
+	while(flag == 0){
+        PORTD &= ~(1 << PORTD2); // Clears the trigPin
+        _delay_us(2);
+        PORTD |= (1 << PORTD2);
+        _delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
+        PORTD &= ~(1 << PORTD2);
+
+        while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+        TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
+
+        start_pulse(); // Record the start time of the pulse
+        while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+        end_pulse(); // Record the end time of the pulse
+        TCCR1B = 0;  // Stop Timer/Counter1
+
+        distance = pulse_duration * 0.034 / 2; // Calculate the distance
+
+
+        //Check if an object is dtetected within the desired range
+        if (distance < 30) {
+			flag =1;
+			score++; //Incremement the score when an object is detected
+			//SPEAKER "You scored a point"
+			//SPEAKER "Current score: score points"
+		}
+
+	}
+	flag = 0;
+
 	//SPEAKER "Beep"
 
 
 
+}
+
+void start_pulse() {
+    pulse_start = TCNT1; // Record the timer value at the start of the pulse
+}
+
+void end_pulse() {
+    pulse_end = TCNT1; // Record the timer value at the end of the pulse
+    pulse_duration = pulse_end - pulse_start; // Calculate the pulse duration
 }
 
 void move_left(int steps, int delay){
