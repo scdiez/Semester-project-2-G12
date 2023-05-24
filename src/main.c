@@ -143,15 +143,16 @@ int main(void) {
 		
 		if(voltagex=5 && voltagey=5){
 			 TCCR0A |= (1 << WGM01);
-			//Set the prescaler to 64
-			TCCR0B |= (1 << CS01) | (1 << CS00);
 			// Set the compare value for 5 seconds 
 			OCR0A = 15624;
+			//Set the prescaler to 64 and start timer
+			TCCR0B |= (1 << CS01) | (1 << CS00);
 			// Enable the output compare A match interrupt
-			TIMSK0 |= (1 << OCIE0A);
-			ISR(TIMER0_COMPA_vect){
-				// Increment the timer overflow variable
+			while ( (TIFR0 & (1 << OCF0A) ) == 0)  // wait for the overflow event{
 				timerOverflow++;
+		}
+		// reset the overflow flag
+		TIFR0 = (1 << OCF0A);
 			}
 		}
 		if (voltagex>=5){
