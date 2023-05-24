@@ -141,7 +141,7 @@ int main(void) {
 		voltagex = (adc_result1/100);
 		voltagey = (adc_result0/100);
 		
-		if(voltagex=5 && volatgey=5){
+		if(voltagex=5 && voltagey=5){
 			 TCCR0A |= (1 << WGM01);
 			//Set the prescaler to 64
 			TCCR0B |= (1 << CS01) | (1 << CS00);
