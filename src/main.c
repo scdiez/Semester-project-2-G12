@@ -15,9 +15,17 @@
 #define trigPin 2
 #define echopin 4
 
+//Vrx to A0
+//Vry to A1
+#define ADC_PIN0 0 //ADC channels we'll use
+#define ADC_PIN1 1 
+
 //functions for sensor 
 void start_pulse();
 void end_pulse();
+
+//function for joystick 
+uint16_t adc_read(uint8_t adc_channel);
 
 //functions for motor movement
 void move_left(int, int);
@@ -37,6 +45,13 @@ int score = 0;
 int sensor_counter= 0;
 int attempt = 0;
 
+//variables for joystick
+ int voltagey;
+ int voltagex;
+volatile uint8_t timerOverflow = 0;
+
+
+
 //variables for motor movement 
 int target_x,target_y, move_x, move_y;
 int current_x=0;
@@ -46,7 +61,13 @@ int main(void) {
 	sei(); // Enable global interrupts
     uart_init();
     io_redirect();
+	//variables for joystick
+	uint16_t adc_result0; 
+  uint16_t adc_result1;
 
+	ADMUX = (1<<REFS0); //Select vref = avcc
+	ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
+	
 	DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
 	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
@@ -110,6 +131,84 @@ int main(void) {
 	zero();
 // } END OF BUTTON ONE PRESSED ONCE IF STATEMENT
 
+	// BUTTON 2 IS PRESSED{ 
+	//SPEAKER "You've selected vision multi player"
+	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
+	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
+	while(timerOverflow>=5){
+		adc_result0 = adc_read(ADC_PIN0); //voltage depends on joystick stage so return voltage read
+		adc_result1 = adc_read(ADC_PIN1);
+		voltagex = (adc_result1/100);
+		voltagey = (adc_result0/100);
+		
+		if(voltage_x=5 && volatge_y=5){
+			 TCCR0A |= (1 << WGM01);
+			//Set the prescaler to 64
+			TCCR0B |= (1 << CS01) | (1 << CS00);
+			// Set the compare value for 5 seconds 
+			OCR0A = 15624;
+			// Enable the output compare A match interrupt
+			TIMSK0 |= (1 << OCIE0A);
+			ISR(TIMER0_COMPA_vect){
+				// Increment the timer overflow variable
+				timerOverflow++;
+			}
+		}
+		if (voltage_x>=5){
+			move_right(5, 400);
+		}
+		if (voltage_x<5){
+			move_left(5, 400);
+		}
+		if(voltage_y>=5){
+			move_up(5, 400);
+		}
+		if (voltage_y<5){
+			move_down(5, 400);
+		}
+	 // Reset the timer overflow variable
+    timerOverflow = 0;
+}
+		
+	while (attempt<=2){
+		//for motion sensor
+		while(flag == 0){
+		PORTD &= ~(1 << PORTD2); // Clears the trigPin
+		_delay_us(2);
+		PORTD |= (1 << PORTD2);
+		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
+		PORTD &= ~(1 << PORTD2);
+
+		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
+
+		start_pulse(); // Record the start time of the pulse
+		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+		end_pulse(); // Record the end time of the pulse
+		TCCR1B = 0;  // Stop Timer/Counter1
+
+		distance = pulse_duration * 0.034 / 2; // Calculate the distance
+
+        //Check if an object is dtetected within the desired range
+        if (distance < 30) {
+			flag =1;
+			score++; //Incremement the score when an object is detected
+			//SPEAKER "You scored a point"
+			//SPEAKER "Current score: score points"
+		attempt=0; 
+		change_position();
+		} else if (distance>30){
+		flag = 1; 
+		// SPEAKER "You missed, Try again" 
+		attempt ++;
+		}
+		}
+	}
+		flag = 0;
+	}
+	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
+	zero();
+	// END OF BUTTON 2 PRESSED
 	// BUTTON 3 IS PRESSED {
 	//SPEAKER "You've selected no vision single player"
 	//SPEAKER "The basketball hoop will now move and make a sound at its final position, try to put the ball inside it"
@@ -152,7 +251,6 @@ int main(void) {
 		}
 		}
 	flag = 0;
-	}
 	//SPEAKER " You have used all your attempts. Press Button 3 if you want to start playing again" 
 	zero();
 // } END OF BUTTON THREE PRESSED ONCE IF STATEMENT
@@ -167,7 +265,13 @@ void end_pulse() {
     pulse_end = TCNT1; // Record the timer value at the end of the pulse
     pulse_duration = pulse_end - pulse_start; // Calculate the pulse duration
 }
-
+uint16_t adc_read(uint8_t adc_channel){
+  ADMUX &= 0xf0; //clear any previously used channel keeping internal reference
+  ADMUX |= adc_channel; //set the desired channel 
+  ADCSRA |= (1<<ADSC); //start a conversion
+  while ((ADCSRA&(1<<ADSC))); //wait for conversion to complete
+  return ADC; //return result as a 16 bit unsigned int
+}
 void move_left(int steps, int delay){
 	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
 	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
@@ -259,5 +363,6 @@ void zero(void){
 		move_left(move_y, 400);
 	}
 }
+
 
 
