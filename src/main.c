@@ -153,9 +153,9 @@ int main(void) {
 			}
 		}
 		// reset the overflow flag
+		
 		TIFR0 = (1 << OCF0A);
-			}
-		}
+		
 		if (voltagex>=5){
 			move_right(5, 400);
 		}
