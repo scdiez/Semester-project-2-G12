@@ -141,7 +141,7 @@ int main(void) {
 		voltagex = (adc_result1/100);
 		voltagey = (adc_result0/100);
 		
-		if(voltage_x=5 && volatge_y=5){
+		if(voltagex=5 && volatgey=5){
 			 TCCR0A |= (1 << WGM01);
 			//Set the prescaler to 64
 			TCCR0B |= (1 << CS01) | (1 << CS00);
@@ -154,16 +154,16 @@ int main(void) {
 				timerOverflow++;
 			}
 		}
-		if (voltage_x>=5){
+		if (voltagex>=5){
 			move_right(5, 400);
 		}
-		if (voltage_x<5){
+		if (voltagex<5){
 			move_left(5, 400);
 		}
-		if(voltage_y>=5){
+		if(voltagey>=5){
 			move_up(5, 400);
 		}
-		if (voltage_y<5){
+		if (voltagey<5){
 			move_down(5, 400);
 		}
 	 // Reset the timer overflow variable
