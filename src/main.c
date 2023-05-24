@@ -16,8 +16,8 @@ volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
 volatile unsigned long pulse_duration;
 volatile int distance;
-unsigned int trial_time = 0;
-int counter;
+long int trial_time = 0;
+int counter = 0;
 
 void start_pulse() {
     pulse_start = TCNT1; // Record the timer value at the start of the pulse
@@ -34,43 +34,40 @@ int main(void)
     uart_init();
     io_redirect();
 
-    DDRD |= (1 << DDD2);
-    DDRD &= ~(1 << DDD4);     // Set echoPin as an input
-    PORTD |= (1 << PORTD4);     // Enable internal pull-up resistor for echoPin
-
+    DDRD |= (1 << DDD2);  //Set trigPin as output
+    DDRD &= ~(1 << DDD4);// Set echoPin as an input
+    PORTD |= (1 << PORTD4);// Enable internal pull-up resistor for echoPin
 
     while (1) {
-        PORTD &= ~(1 << PORTD2); // Clears the trigPin
+        // Clears the trigPin
+        PORTD &= ~(1 << PORTD2);
         _delay_us(2);
-        PORTD |= (1 << PORTD2);    // Sets the trigPin on HIGH state for 10 microseconds
+        PORTD |= (1 << PORTD2);// Sets the trigPin on HIGH state for 10 microseconds
         _delay_us(10);
         PORTD &= ~(1 << PORTD2);
-        while ((PIND & (1 << PIND4)) == 0) {}  // Wait for the falling edge on echoPin
+        while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+
         // Start Timer/Counter1
         TCCR1B |= (1 << CS11); // Set prescaler to 8
-        start_pulse();        // Record the start time of the pulse
+        start_pulse(); // Record the start time of the pulse
         while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
-        end_pulse();     // Record the end time of the pulse
-        TCCR1B = 0;   // Stop Timer/Counter1
-
+        end_pulse(); // Record the end time of the pulse
+        TCCR1B = 0; // Stop Timer/Counter1
 		trial_time = trial_time + pulse_duration;
-        distance = pulse_duration * 0.017 / 2; // Calculate the distance
-		printf("%u", trial_time);
-
-		if (trial_time>=65000){
+		if (trial_time >= 100000){
 			counter++;
-			trial_time=0;
+			trial_time = 0;
 		}
+
+        distance = pulse_duration * 0.017 / 2;// Calculate the distance
         if (distance < 9.5) {
-            printf("Nice shot! \n");
+             printf("Nice shot! \n");
         }
 
-
-        if (distance > 9.5 && counter>=10) {
-            printf("Try Again \n");
-			counter++;
+        if (distance > 9.5) {
+             printf("Try Again");
+			 printf("%d \n", counter);
         }
     }
-
     return 0;
 }
