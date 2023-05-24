@@ -32,8 +32,8 @@ void move_left(int, int);
 void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
-void change_position(void);
-void zero(void);
+int change_position(void);
+int zero(void);
 
 //variables for sensor
 volatile unsigned long pulse_start;
@@ -322,7 +322,7 @@ void move_down(int steps, int delay){
             _delay_us(delay);
         }
 }
-void change_position(void){
+int change_position(void){
 	srand(time(0));
     target_x = rand() % 50;
     target_y = rand() % 50;
@@ -345,7 +345,7 @@ void change_position(void){
 }
 
 //Using max steps 500,500
-void zero(void){
+int zero(void){
 	move_x = 0 - current_x;
 	move_y = 0 - current_y;
 
