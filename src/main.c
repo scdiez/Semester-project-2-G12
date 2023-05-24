@@ -51,8 +51,8 @@ int main(void) {
 	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
 	DDRD |= (1 << DDD2); //Set trig pin to output
-    DDRD &= ~(1 << DDD4); // Set echoPin as an input
-    PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
+    	DDRD &= ~(1 << DDD4); // Set echoPin as an input
+    	PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
 
 
 	//SPEAKER "PRESS A BUTTON TO PLAY" 
