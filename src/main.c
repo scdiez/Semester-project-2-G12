@@ -148,8 +148,9 @@ int main(void) {
 			//Set the prescaler to 64 and start timer
 			TCCR0B |= (1 << CS01) | (1 << CS00);
 			// Enable the output compare A match interrupt
-			while ( (TIFR0 & (1 << OCF0A) ) == 0)  // wait for the overflow event{
+			while ( (TIFR0 & (1 << OCF0A) ) == 0){  // wait for the overflow event
 				timerOverflow++;
+			}
 		}
 		// reset the overflow flag
 		TIFR0 = (1 << OCF0A);
