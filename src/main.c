@@ -65,6 +65,9 @@ int main(void) {
 	//variables for joystick
 	uint16_t adc_result0; 
   uint16_t adc_result1;
+	
+	DDRC = 0xF0;
+	PORTC = 0x3F;
 
 	ADMUX = (1<<REFS0); //Select vref = avcc
 	ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
@@ -88,7 +91,7 @@ int main(void) {
 	}
 	//} END OF BUTTON 1 PRESSED TWICE
 
-	// BUTTON 1 IS PRESSED {
+	if (PINC == 0b00111110){
 	//SPEAKER "You've selected vision single player"
 	//SPEAKER "The basketball hoop will now move. You get 3 attempts to score."
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
@@ -130,9 +133,9 @@ int main(void) {
 	}
 	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
 	zero();
-// } END OF BUTTON ONE PRESSED ONCE IF STATEMENT
+} 
 
-	// BUTTON 2 IS PRESSED{ 
+	if (PINC == 0b00111101){
 	//SPEAKER "You've selected vision multi player"
 	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
@@ -175,8 +178,9 @@ int main(void) {
 	}
 	//SPEAKER " You have used all your attempts. Press Button 2 if you want to start playing again" 
 	zero();
-	// END OF BUTTON 2 PRESSED
-	// BUTTON 3 IS PRESSED {
+}
+	if (PINC == 0b00111011){
+
 	//SPEAKER "You've selected no vision single player"
 	//SPEAKER "The basketball hoop will now move and make a sound at its final position, try to put the ball inside it"
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
@@ -220,8 +224,9 @@ int main(void) {
 	flag = 0;
 	//SPEAKER " You have used all your attempts. Press Button 3 if you want to start playing again" 
 	zero();
-// } END OF BUTTON THREE PRESSED ONCE IF STATEMENT
-// BUTTON 4 IS PRESSED 
+} 
+if (PINC == 0b00110111){
+
 	//SPEAKER "You've selected no vision multi player"
 	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
@@ -266,7 +271,7 @@ int main(void) {
 	}
 	//SPEAKER " You have used all your attempts. Press Button 4 if you want to start playing again" 
 	zero();
-// END OF BUTTON 4 PRESSED ONCE 		
+		
 }
 
 void start_pulse() {
