@@ -1,30 +1,53 @@
+#define F_CPU 16000000UL
+
+
 #include <avr/io.h>
-#include <stdio.h>
 #include <util/delay.h>
-#include "i2cmaster.h"
-#include "lcd.h"
+#include <stdio.h>
 #include "usart.h"
 
-int main (){
-uart_init(); // open the communication to the microcontroller
-io_redirect();
 
-//setting buttons
-DDRC = 0xF0; //buttons inputs
-PORTC = 0x3F; //Enable internal pullups at PC0..3
+int main(void) {    
 
-while(1){
-  if (PINC == 0b00111110){ //first button pressed?
-	  printf("DI0 pressed");
-  } 
-  if (PINC == 0b00111101){ //second button pressed?
-	  printf("DI1 pressed");
-  }  
-    if (PINC == 0b00111011){ //third button pressed?
-	  printf("DI2 pressed");
-  } 
-    if (PINC == 0b00110111){ //fourth button pressed?
-	  printf("DI3 pressed");
-  } 
+
+    uart_init(); // open the communication to the microcontroller
+    io_redirect(); // redirect input and output to the communication
+
+
+    printf("Test");
+
+
+    DDRC = 0xF0;
+    PORTC = 0x3F;
+
+
+    while(1)
+    {
+        if (PINC == 0b00111110)
+        {
+            printf("1");
+			_delay_ms(500);
+        }
+        if (PINC == 0b00111101)
+        {
+            printf("2");
+			_delay_ms(500);
+        }
+        if (PINC == 0b00111011)
+        {
+            printf("3");
+			_delay_ms(500);
+        }
+        if (PINC == 0b00110111)
+        {
+            printf("4");
+			_delay_ms(500);
+        }
+    }
+
+
+       
+    return 0;
 }
-}
+
+
