@@ -26,6 +26,7 @@ void end_pulse();
 
 //function for joystick 
 uint16_t adc_read(uint8_t adc_channel);
+void joystick(void);
 
 //functions for motor movement
 void move_left(int, int);
@@ -134,44 +135,8 @@ int main(void) {
 	// BUTTON 2 IS PRESSED{ 
 	//SPEAKER "You've selected vision multi player"
 	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
-	while(timerOverflow>=5){
-		adc_result0 = adc_read(ADC_PIN0); //voltage depends on joystick stage so return voltage read
-		adc_result1 = adc_read(ADC_PIN1);
-		voltagex = (adc_result1/100);
-		voltagey = (adc_result0/100);
-		
-		if(voltagex=5 && voltagey=5){
-			 TCCR0A |= (1 << WGM01);
-			// Set the compare value for 5 seconds 
-			OCR0A = 15624;
-			//Set the prescaler to 64 and start timer
-			TCCR0B |= (1 << CS01) | (1 << CS00);
-			// Enable the output compare A match interrupt
-			while ( (TIFR0 & (1 << OCF0A) ) == 0){  // wait for the overflow event
-				timerOverflow++;
-			}
-		}
-		// reset the overflow flag
-		
-		TIFR0 = (1 << OCF0A);
-		
-		if (voltagex>=5){
-			move_right(5, 400);
-		}
-		if (voltagex<5){
-			move_left(5, 400);
-		}
-		if(voltagey>=5){
-			move_up(5, 400);
-		}
-		if (voltagey<5){
-			move_down(5, 400);
-		}
-	 // Reset the timer overflow variable
-    timerOverflow = 0;
-}
-		
+	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
+	joystick();
 	while (attempt<=2){
 		//for motion sensor
 		while(flag == 0){
@@ -323,6 +288,44 @@ void move_down(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
+}
+void joystick(void){
+	while(timerOverflow>=5){
+		adc_result0 = adc_read(ADC_PIN0); //voltage depends on joystick stage so return voltage read
+		adc_result1 = adc_read(ADC_PIN1);
+		voltagex = (adc_result1/100);
+		voltagey = (adc_result0/100);
+		
+		if(voltagex=5 && voltagey=5){
+			 TCCR0A |= (1 << WGM01);
+			// Set the compare value for 5 seconds 
+			OCR0A = 15624;
+			//Set the prescaler to 64 and start timer
+			TCCR0B |= (1 << CS01) | (1 << CS00);
+			// Enable the output compare A match interrupt
+			while ( (TIFR0 & (1 << OCF0A) ) == 0){  // wait for the overflow event
+				timerOverflow++;
+			}
+		}
+		// reset the overflow flag
+		
+		TIFR0 = (1 << OCF0A);
+		
+		if (voltagex>=5){
+			move_right(5, 400);
+		}
+		if (voltagex<5){
+			move_left(5, 400);
+		}
+		if(voltagey>=5){
+			move_up(5, 400);
+		}
+		if (voltagey<5){
+			move_down(5, 400);
+		}
+	 // Reset the timer overflow variable
+    timerOverflow = 0;
+}
 }
 int change_position(void){
 	srand(time(0));
