@@ -37,8 +37,8 @@ void move_left(int, int);
 void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
-int change_position(void);
-int zero(void);
+void change_position(void);
+void zero(void);
 
 //functions for usart speaker
 void usart_init(void);
@@ -58,6 +58,9 @@ int attempt = 0;
  int voltagey;
  int voltagex;
 volatile uint8_t timerOverflow = 0;
+uint16_t adc_result0; 
+uint16_t adc_result1;
+int joystickflag;
 
 
 
@@ -72,8 +75,6 @@ int main(void) {
     io_redirect();
 	usart_init();
 	//variables for joystick
-	uint16_t adc_result0; 
-  	uint16_t adc_result1;
 	
 	DDRC = 0xF0;
 	PORTC = 0x3F;
@@ -93,9 +94,10 @@ int main(void) {
 	//_delay_ms()
 
 	zero();
+	while (1){
 	
 	//BUTTON 1 IS PRESSED TWICE { 
-	if(score=0){
+	if(score==0){
 		usart_send(4); //" You lost Better luck next time" 
 		//_delay_ms()
 	} else{
@@ -145,7 +147,7 @@ int main(void) {
 	}
 	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
 	zero();
-} 
+	} 
 
 	if (PINC == 0b00111101){
 	//SPEAKER "You've selected vision multi player"
@@ -190,7 +192,7 @@ int main(void) {
 	}
 	//SPEAKER " You have used all your attempts. Press Button 2 if you want to start playing again" 
 	zero();
-}
+
 	if (PINC == 0b00111011){
 
 	//SPEAKER "You've selected no vision single player"
@@ -236,8 +238,8 @@ int main(void) {
 	flag = 0;
 	//SPEAKER " You have used all your attempts. Press Button 3 if you want to start playing again" 
 	zero();
-} 
-if (PINC == 0b00110111){
+	} 
+	if (PINC == 0b00110111){
 
 	//SPEAKER "You've selected no vision multi player"
 	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
@@ -283,6 +285,8 @@ if (PINC == 0b00110111){
 	}
 	//SPEAKER " You have used all your attempts. Press Button 4 if you want to start playing again" 
 	zero();
+	}
+	}
 		
 }
 
@@ -352,44 +356,49 @@ void move_down(int steps, int delay){
         }
 }
 void joystick(void){
-	while(timerOverflow>=5){
+	joystickflag = 1;
+	while(joystickflag == 1){
 		adc_result0 = adc_read(ADC_PIN0); //voltage depends on joystick stage so return voltage read
 		adc_result1 = adc_read(ADC_PIN1);
 		voltagex = (adc_result1/100);
 		voltagey = (adc_result0/100);
-		
-		if(voltagex=5 && voltagey=5){
-			 TCCR0A |= (1 << WGM01);
-			// Set the compare value for 5 seconds 
-			OCR0A = 15624;
-			//Set the prescaler to 64 and start timer
-			TCCR0B |= (1 << CS01) | (1 << CS00);
-			// Enable the output compare A match interrupt
-			while ( (TIFR0 & (1 << OCF0A) ) == 0){  // wait for the overflow event
-				timerOverflow++;
+		timerOverflow = 0;
+
+		while(voltagex==5 && voltagey==5 && timerOverflow <= 5000){
+				TCCR0A |= (1 << WGM01);
+				// Set the compare value for 1 ms 
+				OCR0A = 0xF9;
+				//Set the prescaler to 64 and start timer
+				TCCR0B |= (1 << CS01) | (1 << CS00);
+				// Enable the output compare A match interrupt
+				while ( (TIFR0 & (1 << OCF0A) ) == 0){  // wait for the overflow event
+			}
+			timerOverflow++;
+			if(timerOverflow >= 4998){
+				joystickflag=0;
 			}
 		}
 		// reset the overflow flag
 		
 		TIFR0 = (1 << OCF0A);
 		
-		if (voltagex>=5){
+		if (voltagex>=6){
 			move_right(5, 400);
 		}
-		if (voltagex<5){
+		if (voltagex<4){
 			move_left(5, 400);
 		}
-		if(voltagey>=5){
+		if(voltagey>=6){
 			move_up(5, 400);
 		}
-		if (voltagey<5){
+		if (voltagey<4){
 			move_down(5, 400);
 		}
 	 // Reset the timer overflow variable
     timerOverflow = 0;
 }
 }
-int change_position(void){
+void change_position(void){
 	srand(time(0));
     target_x = rand() % 50;
     target_y = rand() % 50;
@@ -412,7 +421,7 @@ int change_position(void){
 }
 
 //Using max steps 500,500
-int zero(void){
+void zero(void){
 	move_x = 0 - current_x;
 	move_y = 0 - current_y;
 
