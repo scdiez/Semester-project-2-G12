@@ -101,14 +101,17 @@ int main(void) {
 		usart_send(4); //" You lost Better luck next time" 
 		//_delay_ms()
 	} else{
-		// SPEAKER " Congrats! Your final score is x points. 
+		usart_send(5); //"You won, congrats your score is x"
+		//_delay_ms()
 	}
 	//} END OF BUTTON 1 PRESSED TWICE
 
 	if (PINC == 0b00111110){
 	//SPEAKER "You've selected vision single player"
-	//SPEAKER "The basketball hoop will now move. You get 3 attempts to score."
-	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
+	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
+	//_delay_ms()
+	usart_send(6)// " Press Button 1 two times when you want to stop playing. Good Luck!" 
+	//_delay_ms()
 	change_position();
 	while (attempt<=2){
 		//for motion sensor
@@ -133,8 +136,10 @@ int main(void) {
         if (distance < 30) {
 			flag =1;
 			score++; //Incremement the score when an object is detected
-			//SPEAKER "You scored a point"
-			//SPEAKER "Current score: score points"
+			usart_send(2);//SPEAKER "You scored a point"
+			//_delay_ms()
+			usart_send(18);//"Current score: score points"
+			// _delay_ms()
 		attempt=0; 
 		change_position();
 		} else if (distance>30){
