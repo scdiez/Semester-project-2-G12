@@ -16,8 +16,9 @@ volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
 volatile unsigned long pulse_duration;
 volatile int distance;
-long int trial_time = 0;
+unsigned int trial_time = 0;
 int counter = 0;
+int sensorflag = 0;
 
 void start_pulse() {
     pulse_start = TCNT1; // Record the timer value at the start of the pulse
@@ -54,19 +55,19 @@ int main(void)
         end_pulse(); // Record the end time of the pulse
         TCCR1B = 0; // Stop Timer/Counter1
 		trial_time = trial_time + pulse_duration;
-		if (trial_time >= 100000){
-			counter++;
+		if (trial_time >= 32000){
+			counter ++;
 			trial_time = 0;
 		}
 
         distance = pulse_duration * 0.017 / 2;// Calculate the distance
         if (distance < 9.5) {
-             printf("Nice shot! \n");
+            printf("Nice shot! \n");
         }
 
-        if (distance > 9.5) {
-             printf("Try Again");
-			 printf("%d \n", counter);
+        if (distance > 9.5 && counter>= 120) {
+            printf("Try Again");
+			counter = 0;
         }
     }
     return 0;
