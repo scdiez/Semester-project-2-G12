@@ -12,6 +12,10 @@
 
 #define F_CPU 16000000UL //DEFINE BAUDRATE AS 9600
 
+//for USART comunication
+#define BAUDRATE 9600
+#define BAUD_PRESCALER (((F_CPU/(BAUDRATE*16UL)))-1)
+
 #define trigPin 2
 #define echopin 4
 
@@ -35,6 +39,10 @@ void move_up (int, int);
 void move_down(int, int);
 int change_position(void);
 int zero(void);
+
+//functions for usart speaker
+void usart_init(void);
+void usart_send(unsigned char);
 
 //variables for sensor
 volatile unsigned long pulse_start;
@@ -62,9 +70,10 @@ int main(void) {
 	sei(); // Enable global interrupts
     uart_init();
     io_redirect();
+	usart_init();
 	//variables for joystick
 	uint16_t adc_result0; 
-  uint16_t adc_result1;
+  	uint16_t adc_result1;
 	
 	DDRC = 0xF0;
 	PORTC = 0x3F;
@@ -80,14 +89,17 @@ int main(void) {
     	PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
 
 
-	//SPEAKER "PRESS A BUTTON TO PLAY" 
+	usart_send(1); //"press any button to start the game"
+	//_delay_ms()
+
 	zero();
 	
 	//BUTTON 1 IS PRESSED TWICE { 
 	if(score=0){
-		// SPEAKER " Your final score is 0. Better luck next time" 
+		usart_send(4); //" You lost Better luck next time" 
+		//_delay_ms()
 	} else{
-		// SPEAKER " Congrats! Your final score is score points. 
+		// SPEAKER " Congrats! Your final score is x points. 
 	}
 	//} END OF BUTTON 1 PRESSED TWICE
 
@@ -419,5 +431,14 @@ int zero(void){
 	}
 }
 
+void usart_init(void){
+    UBRR0H = (uint8_t)(BAUD_PRESCALER>>8);
+    UBRR0L = (uint8_t)(BAUD_PRESCALER);
+    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+    UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
+}
 
-
+void usart_send (unsigned char data){
+    while(!(UCSR0A & (1<<UDRE0))); //wait for new data
+    UDR0 = data;
+}
