@@ -20,14 +20,11 @@ unsigned int trial_time = 0;
 int counter = 0;
 int sensorflag = 0;
 
-void start_pulse() {
-    pulse_start = TCNT1; // Record the timer value at the start of the pulse
-}
+void start_pulse(void);
 
-void end_pulse() {
-    pulse_end = TCNT1; // Record the timer value at the end of the pulse
-    pulse_duration = pulse_end - pulse_start; // Calculate the pulse duration
-}
+void end_pulse(void);
+
+int detect_ball (void);
 
 int main(void)
 {
@@ -39,7 +36,30 @@ int main(void)
     DDRD &= ~(1 << DDD4);// Set echoPin as an input
     PORTD |= (1 << PORTD4);// Enable internal pull-up resistor for echoPin
 
-    while (1) {
+	printf("%d", detect_ball());
+	_delay_ms(2000);
+	printf("%d", detect_ball());
+	_delay_ms(2000);
+	printf("%d", detect_ball());
+	_delay_ms(2000);
+	printf("%d", detect_ball());
+	_delay_ms(2000);
+
+    return 0;
+}
+
+void start_pulse() {
+    pulse_start = TCNT1; // Record the timer value at the start of the pulse
+}
+
+void end_pulse() {
+    pulse_end = TCNT1; // Record the timer value at the end of the pulse
+    pulse_duration = pulse_end - pulse_start; // Calculate the pulse duration
+}
+
+int detect_ball (void){
+	sensorflag = 0;
+    while (sensorflag == 0) {
         // Clears the trigPin
         PORTD &= ~(1 << PORTD2);
         _delay_us(2);
@@ -62,13 +82,13 @@ int main(void)
 
         distance = pulse_duration * 0.017 / 2;// Calculate the distance
         if (distance < 9.5) {
-            printf("Nice shot! \n");
+			sensorflag = 1;
+			return (2); //Number of audio for "You scored a point"
         }
 
-        if (distance > 9.5 && counter>= 120) {
-            printf("Try Again");
+        if (distance > 9.5 && counter>= 120) { //edit counter value for a longer time for shooting 
+            return (3); //Audio for "Try again to shoot" 
 			counter = 0;
         }
     }
-    return 0;
 }
