@@ -163,7 +163,7 @@ int main(void) {
 			//SPEAKER "You scored a point"
 			//SPEAKER "Current score: score points"
 		attempt=0; 
-		change_position();
+		joystick();
 		} else if (distance>30){
 		flag = 1; 
 		// SPEAKER "You missed, Try again" 
@@ -173,7 +173,7 @@ int main(void) {
 	}
 		flag = 0;
 	}
-	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
+	//SPEAKER " You have used all your attempts. Press Button 2 if you want to start playing again" 
 	zero();
 	// END OF BUTTON 2 PRESSED
 	// BUTTON 3 IS PRESSED {
@@ -221,7 +221,52 @@ int main(void) {
 	//SPEAKER " You have used all your attempts. Press Button 3 if you want to start playing again" 
 	zero();
 // } END OF BUTTON THREE PRESSED ONCE IF STATEMENT
+// BUTTON 4 IS PRESSED 
+	//SPEAKER "You've selected no vision multi player"
+	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
+	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
+	joystick();
+		// SPEAKER "beep" 
+	while (attempt<=2){
+		//for motion sensor
+		while(flag == 0){
+		PORTD &= ~(1 << PORTD2); // Clears the trigPin
+		_delay_us(2);
+		PORTD |= (1 << PORTD2);
+		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
+		PORTD &= ~(1 << PORTD2);
 
+		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
+
+		start_pulse(); // Record the start time of the pulse
+		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+		end_pulse(); // Record the end time of the pulse
+		TCCR1B = 0;  // Stop Timer/Counter1
+
+		distance = pulse_duration * 0.034 / 2; // Calculate the distance
+
+        //Check if an object is dtetected within the desired range
+        if (distance < 30) {
+			flag =1;
+			score++; //Incremement the score when an object is detected
+			//SPEAKER "You scored a point"
+			//SPEAKER "Current score: score points"
+		attempt=0; 
+		joystick();
+		// SPEAKER "beep" 
+		} else if (distance>30){
+		flag = 1; 
+		// SPEAKER "You missed, Try again" 
+		attempt ++;
+		}
+		}
+	}
+		flag = 0;
+	}
+	//SPEAKER " You have used all your attempts. Press Button 4 if you want to start playing again" 
+	zero();
+// END OF BUTTON 4 PRESSED ONCE 		
 }
 
 void start_pulse() {
