@@ -49,9 +49,11 @@ volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
 volatile unsigned long pulse_duration;
 volatile int distance;
-int flag=0;
+unsigned int trial_time;
+int sensorcounter = 0;
+int shotin =0;
+int sensorflag=0;
 int score = 0;
-int sensor_counter= 0;
 int attempt = 0;
 
 //variables for joystick
@@ -86,10 +88,8 @@ int main(void) {
 	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
 	DDRD |= (1 << DDD2); //Set trig pin to output
-    	DDRD &= ~(1 << DDD4); // Set echoPin as an input
-    	PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
-
-
+    DDRD &= ~(1 << DDD4); // Set echoPin as an input
+    PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
 	usart_send(1); //"press any button to start the game"
 	//_delay_ms()
 
@@ -110,46 +110,28 @@ int main(void) {
 	//SPEAKER "You've selected vision single player"
 	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
 	//_delay_ms()
-	usart_send(6)// " Press Button 1 two times when you want to stop playing. Good Luck!" 
+	usart_send(6);// " Press Button 1 two times when you want to stop playing. Good Luck!" 
 	//_delay_ms()
 	change_position();
+	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
-		//for motion sensor
-		while(flag == 0){
-		PORTD &= ~(1 << PORTD2); // Clears the trigPin
-		_delay_us(2);
-		PORTD |= (1 << PORTD2);
-		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
-		PORTD &= ~(1 << PORTD2);
-
-		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
-		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
-
-		start_pulse(); // Record the start time of the pulse
-		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
-		end_pulse(); // Record the end time of the pulse
-		TCCR1B = 0;  // Stop Timer/Counter1
-
-		distance = pulse_duration * 0.034 / 2; // Calculate the distance
-
-        //Check if an object is dtetected within the desired range
-        if (distance < 30) {
-			flag =1;
+		shotin = detect_ball();
+		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
 			usart_send(2);//SPEAKER "You scored a point"
 			//_delay_ms()
 			usart_send(18);//"Current score: score points"
 			// _delay_ms()
-		attempt=0; 
-		change_position();
-		} else if (distance>30){
-		flag = 1; 
-		// SPEAKER "You missed, Try again" 
-		attempt ++;
+			attempt=0; 
+			change_position();
 		}
+		//_delay_ms()
+		if (shotin == 0){
+			// SPEAKER "You missed, Try again" 
+			attempt ++;
 		}
-	flag = 0;
 	}
+	attempt = 0;
 	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
 	zero();
 	} 
@@ -159,44 +141,29 @@ int main(void) {
 	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
 	joystick();
+	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
-		//for motion sensor
-		while(flag == 0){
-		PORTD &= ~(1 << PORTD2); // Clears the trigPin
-		_delay_us(2);
-		PORTD |= (1 << PORTD2);
-		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
-		PORTD &= ~(1 << PORTD2);
-
-		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
-		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
-
-		start_pulse(); // Record the start time of the pulse
-		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
-		end_pulse(); // Record the end time of the pulse
-		TCCR1B = 0;  // Stop Timer/Counter1
-
-		distance = pulse_duration * 0.034 / 2; // Calculate the distance
-
-        //Check if an object is dtetected within the desired range
-        if (distance < 30) {
-			flag =1;
+		shotin =detect_ball();
+		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
-			//SPEAKER "You scored a point"
-			//SPEAKER "Current score: score points"
-		attempt=0; 
-		joystick();
-		} else if (distance>30){
-		flag = 1; 
-		// SPEAKER "You missed, Try again" 
-		attempt ++;
+			usart_send(2);//SPEAKER "You scored a point"
+			//_delay_ms()
+			usart_send(18);//"Current score: score points"
+			// _delay_ms()
+			attempt=0; 
+			change_position();
 		}
+		//_delay_ms()
+		if (shotin == 0){
+			// SPEAKER "You missed, Try again" 
+			attempt ++;
 		}
 	}
-		flag = 0;
+	attempt = 0;
 	}
 	//SPEAKER " You have used all your attempts. Press Button 2 if you want to start playing again" 
 	zero();
+
 
 	if (PINC == 0b00111011){
 
@@ -205,42 +172,25 @@ int main(void) {
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
 	change_position();
 	// SPEAKER "beep"
+	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
-		//for motion sensor
-		while(flag == 0){
-		PORTD &= ~(1 << PORTD2); // Clears the trigPin
-		_delay_us(2);
-		PORTD |= (1 << PORTD2);
-		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
-		PORTD &= ~(1 << PORTD2);
-
-		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
-		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
-
-		start_pulse(); // Record the start time of the pulse
-		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
-		end_pulse(); // Record the end time of the pulse
-		TCCR1B = 0;  // Stop Timer/Counter1
-
-		distance = pulse_duration * 0.034 / 2; // Calculate the distance
-
-        //Check if an object is dtetected within the desired range
-        if (distance < 30) {
-			flag =1;
+		shotin =detect_ball();
+		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
-			//SPEAKER "You scored a point"
-			//SPEAKER "Current score: score points"
-		attempt=0; 
-		change_position();
-		// SPEAKER "beep"
-		} else if (distance>30){
-		flag = 1; 
-		// SPEAKER "You missed, Try again" 
-		//SPEAKER "beep"
-		attempt ++;
+			usart_send(2);//SPEAKER "You scored a point"
+			//_delay_ms()
+			usart_send(18);//"Current score: score points"
+			// _delay_ms()
+			attempt=0; 
+			change_position();
 		}
+		//_delay_ms()
+		if (shotin == 0){
+			// SPEAKER "You missed, Try again" 
+			attempt ++;
 		}
-	flag = 0;
+	}
+	attempt = 0;
 	//SPEAKER " You have used all your attempts. Press Button 3 if you want to start playing again" 
 	zero();
 	} 
@@ -251,46 +201,28 @@ int main(void) {
 	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
 	joystick();
 		// SPEAKER "beep" 
+	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
-		//for motion sensor
-		while(flag == 0){
-		PORTD &= ~(1 << PORTD2); // Clears the trigPin
-		_delay_us(2);
-		PORTD |= (1 << PORTD2);
-		_delay_us(10); // Sets the trigPin on HIGH state for 10 microseconds
-		PORTD &= ~(1 << PORTD2);
-
-		while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
-		TCCR1B |= (1 << CS11); // Start Timer/Counter1 and set prescaler to 8
-
-		start_pulse(); // Record the start time of the pulse
-		while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
-		end_pulse(); // Record the end time of the pulse
-		TCCR1B = 0;  // Stop Timer/Counter1
-
-		distance = pulse_duration * 0.034 / 2; // Calculate the distance
-
-        //Check if an object is dtetected within the desired range
-        if (distance < 30) {
-			flag =1;
+		shotin =detect_ball();
+		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
-			//SPEAKER "You scored a point"
-			//SPEAKER "Current score: score points"
-		attempt=0; 
-		joystick();
-		// SPEAKER "beep" 
-		} else if (distance>30){
-		flag = 1; 
-		// SPEAKER "You missed, Try again" 
-		attempt ++;
+			usart_send(2);//SPEAKER "You scored a point"
+			//_delay_ms()
+			usart_send(18);//"Current score: score points"
+			// _delay_ms()
+			attempt=0; 
+			change_position();
 		}
+		//_delay_ms()
+		if (shotin == 0){
+			// SPEAKER "You missed, Try again" 
+			attempt ++;
 		}
 	}
-		flag = 0;
+	attempt = 0;
 	}
 	//SPEAKER " You have used all your attempts. Press Button 4 if you want to start playing again" 
 	zero();
-	}
 	}
 		
 }
@@ -303,6 +235,43 @@ void end_pulse() {
     pulse_end = TCNT1; // Record the timer value at the end of the pulse
     pulse_duration = pulse_end - pulse_start; // Calculate the pulse duration
 }
+
+int detect_ball (void){
+	sensorflag = 0;
+    while (sensorflag == 0) {
+        // Clears the trigPin
+        PORTD &= ~(1 << PORTD2);
+        _delay_us(2);
+        PORTD |= (1 << PORTD2);// Sets the trigPin on HIGH state for 10 microseconds
+        _delay_us(10);
+        PORTD &= ~(1 << PORTD2);
+        while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+
+        // Start Timer/Counter1
+        TCCR1B |= (1 << CS11); // Set prescaler to 8
+        start_pulse(); // Record the start time of the pulse
+        while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+        end_pulse(); // Record the end time of the pulse
+        TCCR1B = 0; // Stop Timer/Counter1
+		trial_time = trial_time + pulse_duration;
+		if (trial_time >= 32000){
+			sensorcounter ++;
+			trial_time = 0;
+		}
+
+        distance = pulse_duration * 0.017 / 2;// Calculate the distance
+        if (distance < 9.5) {
+			sensorflag = 1;
+			return (1); 
+        }
+
+        if (distance > 9.5 && sensorcounter>= 120) { //edit counter value for a longer time for shooting 
+            return (0); 
+			sensorcounter = 0;
+        }
+    }
+}
+
 uint16_t adc_read(uint8_t adc_channel){
   ADMUX &= 0xf0; //clear any previously used channel keeping internal reference
   ADMUX |= adc_channel; //set the desired channel 
