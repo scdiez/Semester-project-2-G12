@@ -8,8 +8,9 @@
 //Vrx to A0
 //Vry to A1
 
-#define JOYSTICK_Y 0 //ADC channels we'll use
-#define JOYSTICK_X 1 
+#define JOYSTICK_Y 0 //ADC channels we'll use A0
+#define JOYSTICK_X 1 //A1
+#define JOYSTICK_SW 12 //Joystick button D12
 
 //Joystick functions
 void joystick ();
@@ -29,7 +30,7 @@ int voltagex;
 uint16_t adc_resulty;
 uint16_t adc_resultx;
 int joystickflag;
-int timeroverflow = 0;
+int buttonstate = 1;
 
 //variables for motor movement 
 int target_x,target_y, move_x, move_y;
@@ -47,6 +48,8 @@ int main (void){
     PORTB = 1<<5;
     ADMUX = (1<<REFS0); //Select vref = avcc
     ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
+    DDRB &= ~(1 << DDB4); // Set button as an input
+    PORTB |= (1 << PORTB4); // Enable pull-up resistor so it reads high when not pressed
 
     //motor configuration
     DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
@@ -83,24 +86,10 @@ void joystick (void){
             printf("movedown \n");
         }
 
-        /*while(voltagex == (512||511||513) && voltagey == (512||511||513) && timeroverflow<=5000){
-            //set the Timer Mode to CTC
-            TCCR0A |= (1<<WGM01);
-            //Set value that you want to count to 
-            OCR0A = 0xF9;
-            //Start the timer and prescaler to 64
-            TCCR0B |= (1<<CS01) | (1<<CS00);
-            while((TIFR0 & (1<<OCF0A))==0){//wait the overflov event
-            }
-            //reset overflow flag 
-            TIFR0 = (1<<OCF0A);
-            timeroverflow ++; //every 1ms
-        }
-
-        if (timeroverflow<=4999){
-            timeroverflow = 0;
+        if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
+            printf("Button pressed \n");
             joystickflag = 0;
-        }*/
+        }
     }
     
 }
