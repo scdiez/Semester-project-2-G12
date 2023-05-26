@@ -107,7 +107,8 @@ int main(void) {
 	//} END OF BUTTON 1 PRESSED TWICE
 
 	if (PINC == 0b00111110){
-	//SPEAKER "You've selected vision single player"
+	usart_send(13); //"You've selected vision single player"
+	_delay_ms(3000);
 	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
 	_delay_ms(4000);
 	usart_send(6);// " Press Button 1 two times when you want to stop playing. Good Luck!" 
@@ -169,7 +170,7 @@ int main(void) {
 	}
 	attempt = 0;
 	}
-	//SPEAKER " You have used all your attempts. Press Button 2 if you want to start playing again" 
+	//SPEAKER "You have used all your attempts. Press Button 2 if you want to start playing again" 
 	zero();
 
 
