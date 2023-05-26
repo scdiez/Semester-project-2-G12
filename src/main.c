@@ -9,8 +9,8 @@
 
 #define F_CPU 16000000UL //DEFINE BAUDRATE AS 9600
 
-#define trigPin 2
-#define echopin 4
+#define trigPin 8
+#define echopin 9
 
 volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
@@ -32,18 +32,14 @@ int main(void)
     uart_init();
     io_redirect();
 
-    DDRD |= (1 << DDD2);  //Set trigPin as output
-    DDRD &= ~(1 << DDD4);// Set echoPin as an input
-    PORTD |= (1 << PORTD4);// Enable internal pull-up resistor for echoPin
+    DDRB |= (1 << DDB0);  //Set trigPin as output
+    DDRB &= ~(1 << DDB1);// Set echoPin as an input
+    PORTB |= (1 << PORTB1);// Enable internal pull-up resistor for echoPin
 
 	printf("%d", detect_ball());
-	_delay_ms(2000);
 	printf("%d", detect_ball());
-	_delay_ms(2000);
 	printf("%d", detect_ball());
-	_delay_ms(2000);
 	printf("%d", detect_ball());
-	_delay_ms(2000);
 
     return 0;
 }
@@ -61,17 +57,17 @@ int detect_ball (void){
 	sensorflag = 0;
     while (sensorflag == 0) {
         // Clears the trigPin
-        PORTD &= ~(1 << PORTD2);
+        PORTB &= ~(1 << PORTB0);
         _delay_us(2);
-        PORTD |= (1 << PORTD2);// Sets the trigPin on HIGH state for 10 microseconds
+        PORTB |= (1 << PORTB0);// Sets the trigPin on HIGH state for 10 microseconds
         _delay_us(10);
-        PORTD &= ~(1 << PORTD2);
-        while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+        PORTB &= ~(1 << PORTB0);
+        while ((PINB & (1 << PINB1)) == 0) {} // Wait for the falling edge on echoPin
 
         // Start Timer/Counter1
         TCCR1B |= (1 << CS11); // Set prescaler to 8
         start_pulse(); // Record the start time of the pulse
-        while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+        while (PINB & (1 << PINB1)) {} // Wait for the rising edge on echoPin
         end_pulse(); // Record the end time of the pulse
         TCCR1B = 0; // Stop Timer/Counter1
 		trial_time = trial_time + pulse_duration;
