@@ -1,63 +1,49 @@
+#define F_CPU 16000000ul
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <util/delay.h>
+#include "i2cmaster.h"
+#define BAUDRATE 57600
+#define BAUD_PRESCALER (((F_CPU/(BAUDRATE*16UL)))-1)
+#include <stdio.h>
+#include "usart.h"
 
-#define F_CPU 16000000UL  // Define the clock frequency
-#define SPEAKER_PIN 9     // Define the speaker pin
 
-volatile uint8_t audioData[] = {
-  // Audio data bytes here
-};
+void usart_init(void);
+void usart_send (unsigned char data);
 
-volatile uint32_t audioDataSize = sizeof(audioData);
-volatile uint32_t audioDataIndex = 0;
 
-// Function to initialize the speaker pin
-void init_speaker() {
-  // Set the speaker pin as output
-  DDRD |= (1 << SPEAKER_PIN);
-}
 
-// Function to play a sound sample on the speaker
-void play_sample(uint8_t sample) {
-  // Write the sample value to the speaker pin
-  PORTD = (PORTD & ~(1 << SPEAKER_PIN)) | ((sample >> 1) & 1) << SPEAKER_PIN;
-}
+int main(void){
+  usart_init();
+  io_redirect();
 
-// Timer1 overflow interrupt
-ISR(TIMER1_OVF_vect) {
-  // Check if all audio data has been played
-  if (audioDataIndex >= audioDataSize) {
-    // Reset the audio data index if you want to loop the audio
-    audioDataIndex = 0;
+  //Button configuration
+  DDRC = 0xF0;
+	PORTC = 0x3F;
+
+  if (PINC == 0b00111110){
+  usart_send(13); //"You've selected vision single player"
+  _delay_ms(3000);
+  usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
+  _delay_ms(4000);
+  usart_send(6);// " Press Button 1 two times when you want to stop playing. Good Luck!" 
+  _delay_ms(4000);
+  usart_send(44); // "you have 8 seconds to get the ball in"
+  _delay_ms(3000);
   }
+    
+return 0;
 
-  // Get the current sample from the audio data
-  uint8_t sample = audioData[audioDataIndex];
-
-  // Play the sample on the speaker
-  play_sample(sample);
-
-  // Increment the audio data index for the next sample
-  audioDataIndex++;
 }
 
-int main() {
-  // Initialize the speaker pin
-  init_speaker();
+void usart_init(void){
+    UBRR0H = (uint8_t)(BAUD_PRESCALER>>8);
+    UBRR0L = (uint8_t)(BAUD_PRESCALER);
+    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+    UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
+}
 
-  // Configure Timer1 for audio playback
-  TCCR1B |= (1 << CS10);  // Set prescaler to 1
-  TIMSK1 |= (1 << TOIE1); // Enable Timer1 overflow interrupt
-
-  // Enable global interrupts
-  sei();
-
-  // Main loop
-  while (1) {
-    // Additional code or tasks can be placed here if needed
-    // The audio playback is handled by the interrupt
-  }
-
-  return 0;
+void usart_send (unsigned char data){
+    while(!(UCSR0A & (1<<UDRE0))); //wait for new data
+    UDR0 = data;
 }
