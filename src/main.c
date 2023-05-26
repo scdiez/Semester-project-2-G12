@@ -91,7 +91,7 @@ int main(void) {
     DDRD &= ~(1 << DDD4); // Set echoPin as an input
     PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
 	usart_send(1); //"press any button to start the game"
-	//_delay_ms()
+	_delay_ms(2000);
 
 	zero();
 	while (1){
@@ -99,19 +99,19 @@ int main(void) {
 	//BUTTON 1 IS PRESSED TWICE { 
 	if(score==0){
 		usart_send(4); //" You lost Better luck next time" 
-		//_delay_ms()
+		_delay_ms(2000);
 	} else{
 		usart_send(5); //"You won, congrats your score is x"
-		//_delay_ms()
+		_delay_ms(2000);
 	}
 	//} END OF BUTTON 1 PRESSED TWICE
 
 	if (PINC == 0b00111110){
 	//SPEAKER "You've selected vision single player"
 	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
-	//_delay_ms()
+	_delay_ms(4000);
 	usart_send(6);// " Press Button 1 two times when you want to stop playing. Good Luck!" 
-	//_delay_ms()
+	_delay_ms(4000);
 	change_position();
 	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
@@ -119,9 +119,11 @@ int main(void) {
 		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
 			usart_send(2);//SPEAKER "You scored a point"
-			//_delay_ms()
-			usart_send(18);//"Current score: score points"
-			// _delay_ms()
+			_delay_ms(2000);
+			usart_send(18);//"Current score:"
+			_delay_ms(1000);
+			usart_send(score + 20); //"Number"
+			_delay_ms(1000);
 			attempt=0; 
 			change_position();
 		}
