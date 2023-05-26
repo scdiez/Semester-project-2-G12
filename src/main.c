@@ -9,20 +9,20 @@
 #include "usart.h"
 #include <time.h>
 #include <avr/interrupt.h>
-
 #define F_CPU 16000000UL //DEFINE BAUDRATE AS 9600
 
-//for USART comunication
+// USART comunication definitions
 #define BAUDRATE 9600
 #define BAUD_PRESCALER (((F_CPU/(BAUDRATE*16UL)))-1)
 
+//Motion sensor connections
 #define trigPin 8
 #define echopin 9
 
-//Vrx to A0
-//Vry to A1
-#define ADC_PIN0 0 //ADC channels we'll use
-#define ADC_PIN1 1 
+//Joystick connections
+#define JOYSTICK_Y 0 //ADC channels we'll use A0
+#define JOYSTICK_X 1 //A1
+#define JOYSTICK_SW 12 //Joystick button D12 
 
 //functions for sensor 
 void start_pulse(void);
@@ -31,7 +31,7 @@ int detect_ball (void);
 
 
 //function for joystick 
-uint16_t adc_read(uint8_t adc_channel);
+uint16_t adc_read(uint8_t);
 void joystick(void);
 
 //functions for motor movement
@@ -42,11 +42,11 @@ void move_down(int, int);
 void change_position(void);
 void zero(void);
 
-//functions for usart speaker
+//Usart functions
 void usart_init(void);
 void usart_send(unsigned char);
 
-//variables for sensor
+//Sensor variables
 volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
 volatile unsigned long pulse_duration;
@@ -58,17 +58,15 @@ int sensorflag=0;
 int score = 0;
 int attempt = 0;
 
-//variables for joystick
- int voltagey;
- int voltagex;
-volatile uint8_t timerOverflow = 0;
-uint16_t adc_result0; 
-uint16_t adc_result1;
+//Joystick variables
+int voltagey;
+int voltagex;
+uint16_t adc_resulty;
+uint16_t adc_resultx;
 int joystickflag;
+int buttonstate = 1;
 
-
-
-//variables for motor movement 
+//Motor movement variables
 int target_x,target_y, move_x, move_y;
 int current_x=0;
 int current_y=0;
@@ -78,18 +76,24 @@ int main(void) {
     uart_init();
     io_redirect();
 	usart_init();
-	//variables for joystick
 	
-	DDRC = 0xF0;
+	//Button configuration?
+    DDRC = 0xF0;
 	PORTC = 0x3F;
 
-	ADMUX = (1<<REFS0); //Select vref = avcc
-	ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
-	
-	DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
+	//Joystick configuration
+    DDRB = 1<<5;
+    PORTB = 1<<5;
+    ADMUX = (1<<REFS0); //Select vref = avcc
+    ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
+    DDRB &= ~(1 << DDB4); // Set button as an input
+    PORTB |= (1 << PORTB4); // Enable pull-up resistor so it reads high when not pressed
+
+    //Motor configuration
+    DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
 	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
-	
+	//Motion sensor configuration
     DDRB |= (1 << DDB0);  //Set trigPin as output
     DDRB &= ~(1 << DDB1);// Set echoPin as an input
     PORTB |= (1 << PORTB1);// Enable internal pull-up resistor for echoPin
@@ -144,8 +148,8 @@ int main(void) {
 
 	if (PINC == 0b00111101){
 	//SPEAKER "You've selected vision multi player"
-	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
+	//SPEAKER "Use the Joystick to control the movement of the hoop and press the joystick once desired location has been reached. You get 3 attempts to score."
+	//SPEAKER "Press Button 1 two times when you want to stop playing. Good Luck!"
 	joystick();
 	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
@@ -335,49 +339,40 @@ void move_down(int steps, int delay){
             _delay_us(delay);
         }
 }
-void joystick(void){
-	joystickflag = 1;
-	while(joystickflag == 1){
-		adc_result0 = adc_read(ADC_PIN0); //voltage depends on joystick stage so return voltage read
-		adc_result1 = adc_read(ADC_PIN1);
-		voltagex = (adc_result1/100);
-		voltagey = (adc_result0/100);
-		timerOverflow = 0;
+void joystick (void){
+    joystickflag = 1;
+    while (joystickflag == 1){
+        adc_resultx = adc_read(JOYSTICK_X); //voltage depends on joystick stage so return voltage read (0-1024mV)
+        voltagex = (adc_resultx);
+        
+        adc_resulty = adc_read(JOYSTICK_Y); //voltage depends on joystick stage so return voltage read
+        voltagey = (adc_resulty);
 
-		while(voltagex==5 && voltagey==5 && timerOverflow <= 5000){
-				TCCR0A |= (1 << WGM01);
-				// Set the compare value for 1 ms 
-				OCR0A = 0xF9;
-				//Set the prescaler to 64 and start timer
-				TCCR0B |= (1 << CS01) | (1 << CS00);
-				// Enable the output compare A match interrupt
-				while ( (TIFR0 & (1 << OCF0A) ) == 0){  // wait for the overflow event
-			}
-			timerOverflow++;
-			if(timerOverflow >= 4998){
-				joystickflag=0;
-			}
-		}
-		// reset the overflow flag
-		
-		TIFR0 = (1 << OCF0A);
-		
-		if (voltagex>=6){
-			move_right(5, 400);
-		}
-		if (voltagex<4){
-			move_left(5, 400);
-		}
-		if(voltagey>=6){
-			move_up(5, 400);
-		}
-		if (voltagey<4){
-			move_down(5, 400);
-		}
-	 // Reset the timer overflow variable
-    timerOverflow = 0;
+        if(voltagex >=1000){ //set threshold to start moving
+            move_right(100,500);
+            printf("moveright \n");
+        }
+        if(voltagex <=50){
+            move_left(100,500);
+            printf("moveleft \n");
+        }
+        if(voltagey >=1000){
+            move_up(100,500);
+            printf("moveup \n");
+        }
+        if(voltagey <=50){
+            move_down(100,500);
+            printf("movedown \n");
+        }
+
+        if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
+            printf("Button pressed \n");
+            joystickflag = 0;
+        }
+    }
+    
 }
-}
+
 void change_position(void){
 	srand(time(0));
     target_x = rand() % 50;
