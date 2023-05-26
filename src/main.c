@@ -170,7 +170,8 @@ int main(void) {
 	}
 	attempt = 0;
 	}
-	//SPEAKER "You have used all your attempts. Press Button 2 if you want to start playing again" 
+	usart_send(41);//"You have used all your attempts. Press Button 2 if you want to start playing again" 
+	_delay_ms(6000);
 	zero();
 
 
@@ -204,7 +205,8 @@ int main(void) {
 		}
 	}
 	attempt = 0;
-	//SPEAKER " You have used all your attempts. Press Button 3 if you want to start playing again" 
+	usart_send(42);//" You have used all your attempts. Press Button 3 if you want to start playing again" 
+	_delay_ms(6000);
 	zero();
 	} 
 	if (PINC == 0b00110111){
@@ -239,7 +241,8 @@ int main(void) {
 	}
 	attempt = 0;
 	}
-	//SPEAKER " You have used all your attempts. Press Button 4 if you want to start playing again" 
+	usart_send(43)//" You have used all your attempts. Press Button 4 if you want to start playing again" 
+	_delay_ms(6000);
 	zero();
 	}
 		
