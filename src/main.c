@@ -194,8 +194,8 @@ int main(void) {
 	_delay_ms(4000);
 	change_position();
 	usart_send(19);// "beep"
-	_dealy_ms(1000); 
-	usart_send (44)//"you have 8 seconds to get the ball in"
+	_delay_ms(1000); 
+	usart_send (44);//"you have 8 seconds to get the ball in"
 	_delay_ms(3000);
 	while (attempt<=2){
 		shotin =detect_ball();
@@ -253,7 +253,7 @@ int main(void) {
 	}
 	attempt = 0;
 	}
-	usart_send(43)//" You have used all your attempts. Press Button 4 if you want to start playing again" 
+	usart_send(43);//" You have used all your attempts. Press Button 4 if you want to start playing again" 
 	_delay_ms(6000);
 	zero();
 	}
