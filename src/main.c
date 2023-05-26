@@ -16,8 +16,8 @@
 #define BAUDRATE 9600
 #define BAUD_PRESCALER (((F_CPU/(BAUDRATE*16UL)))-1)
 
-#define trigPin 2
-#define echopin 4
+#define trigPin 8
+#define echopin 9
 
 //Vrx to A0
 //Vry to A1
@@ -25,8 +25,10 @@
 #define ADC_PIN1 1 
 
 //functions for sensor 
-void start_pulse();
-void end_pulse();
+void start_pulse(void);
+void end_pulse(void);
+int detect_ball (void);
+
 
 //function for joystick 
 uint16_t adc_read(uint8_t adc_channel);
@@ -87,9 +89,11 @@ int main(void) {
 	DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
 	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
-	DDRD |= (1 << DDD2); //Set trig pin to output
-    DDRD &= ~(1 << DDD4); // Set echoPin as an input
-    PORTD |= (1 << PORTD4); // Enable internal pull-up resistor for echoPin
+	
+    DDRB |= (1 << DDB0);  //Set trigPin as output
+    DDRB &= ~(1 << DDB1);// Set echoPin as an input
+    PORTB |= (1 << PORTB1);// Enable internal pull-up resistor for echoPin
+	
 	usart_send(1); //"press any button to start the game"
 	_delay_ms(2000);
 
@@ -242,17 +246,17 @@ int detect_ball (void){
 	sensorflag = 0;
     while (sensorflag == 0) {
         // Clears the trigPin
-        PORTD &= ~(1 << PORTD2);
+        PORTB &= ~(1 << PORTB0);
         _delay_us(2);
-        PORTD |= (1 << PORTD2);// Sets the trigPin on HIGH state for 10 microseconds
+        PORTB |= (1 << PORTB0);// Sets the trigPin on HIGH state for 10 microseconds
         _delay_us(10);
-        PORTD &= ~(1 << PORTD2);
-        while ((PIND & (1 << PIND4)) == 0) {} // Wait for the falling edge on echoPin
+        PORTB &= ~(1 << PORTB0);
+        while ((PINB & (1 << PINB1)) == 0) {} // Wait for the falling edge on echoPin
 
         // Start Timer/Counter1
         TCCR1B |= (1 << CS11); // Set prescaler to 8
         start_pulse(); // Record the start time of the pulse
-        while (PIND & (1 << PIND4)) {} // Wait for the rising edge on echoPin
+        while (PINB & (1 << PINB1)) {} // Wait for the rising edge on echoPin
         end_pulse(); // Record the end time of the pulse
         TCCR1B = 0; // Stop Timer/Counter1
 		trial_time = trial_time + pulse_duration;
@@ -264,11 +268,11 @@ int detect_ball (void){
         distance = pulse_duration * 0.017 / 2;// Calculate the distance
         if (distance < 9.5) {
 			sensorflag = 1;
-			return (1); 
+			return (2); //Number of audio for "You scored a point"
         }
 
         if (distance > 9.5 && sensorcounter>= 120) { //edit counter value for a longer time for shooting 
-            return (0); 
+            return (3); //Audio for "Try again to shoot" 
 			sensorcounter = 0;
         }
     }
