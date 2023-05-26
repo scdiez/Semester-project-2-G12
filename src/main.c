@@ -118,7 +118,7 @@ int main(void) {
 		shotin = detect_ball();
 		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
-			usart_send(2);//SPEAKER "You scored a point"
+			usart_send(2);//"You scored a point"
 			_delay_ms(2000);
 			usart_send(18);//"Current score:"
 			_delay_ms(1000);
@@ -129,19 +129,24 @@ int main(void) {
 		}
 		//_delay_ms()
 		if (shotin == 0){
-			// SPEAKER "You missed, Try again" 
+			usart_send(3); // "try again to shoot"
+			_delay_ms(1000);
 			attempt ++;
 		}
 	}
 	attempt = 0;
-	//SPEAKER " You have used all your attempts. Press Button 1 if you want to start playing again" 
+	usart_send(17); // " You have used all your attempts. Press Button 1 if you want to start playing again" 
+	_delay_ms(5000);
 	zero();
 	} 
 
 	if (PINC == 0b00111101){
-	//SPEAKER "You've selected vision multi player"
-	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
+	usart_send(14);//"You've selected vision multi player"
+	_delay_ms(3000);
+	usart_send(8);//"Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
+	_delay_ms(9000);
+	usart_send (6); //" Press Button 1 two times when you want to stop playing. Good Luck!"
+	_delay_ms(4000);
 	joystick();
 	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
@@ -157,7 +162,8 @@ int main(void) {
 		}
 		//_delay_ms()
 		if (shotin == 0){
-			// SPEAKER "You missed, Try again" 
+			usart_send(3); // "try again to shoot"
+			_delay_ms(1000);
 			attempt ++;
 		}
 	}
@@ -168,12 +174,15 @@ int main(void) {
 
 
 	if (PINC == 0b00111011){
-
-	//SPEAKER "You've selected no vision single player"
-	//SPEAKER "The basketball hoop will now move and make a sound at its final position, try to put the ball inside it"
-	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!" 
+	usart_send(15); //"You've selected no vision single player"
+	_delay_ms(2000); 
+	usart_send(7); // "The basketball hoop will now move to score"
+	_delay_ms(4000); 
+	usart_send(6); //" Press Button 1 two times when you want to stop playing. Good Luck!"
+	_delay_ms(4000);
 	change_position();
-	// SPEAKER "beep"
+	usart_send(19);// "beep"
+	_dealy_ms(1000); 
 	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
 		shotin =detect_ball();
@@ -188,7 +197,8 @@ int main(void) {
 		}
 		//_delay_ms()
 		if (shotin == 0){
-			// SPEAKER "You missed, Try again" 
+			usart_send(3);// "try again to shoot"
+			_delay_ms(1000);
 			attempt ++;
 		}
 	}
@@ -198,17 +208,21 @@ int main(void) {
 	} 
 	if (PINC == 0b00110111){
 
-	//SPEAKER "You've selected no vision multi player"
-	//SPEAKER "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	//SPEAKER " Press Button 1 two times when you want to stop playing. Good Luck!"
+	usart_send(16);//"You've selected no vision multi player"
+	_delay_ms(2000);
+	usart_send(8); // "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
+	_delay_ms(9000);
+	usart_send(6);//" Press Button 1 two times when you want to stop playing. Good Luck!"
+	_delay_ms(4000);
 	joystick();
-		// SPEAKER "beep" 
+	usart_send(19); // "beep" 
+	_delay_ms(1000);
 	//SPEAKER: you have 8 seconds to get the ball in
 	while (attempt<=2){
 		shotin =detect_ball();
 		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
-			usart_send(2);//SPEAKER "You scored a point"
+			usart_send(2);//"You scored a point"
 			//_delay_ms()
 			usart_send(18);//"Current score: score points"
 			// _delay_ms()
@@ -217,7 +231,8 @@ int main(void) {
 		}
 		//_delay_ms()
 		if (shotin == 0){
-			// SPEAKER "You missed, Try again" 
+			usart_send(3);// "Try again to shoot"
+			_delay_ms(1000);
 			attempt ++;
 		}
 	}
