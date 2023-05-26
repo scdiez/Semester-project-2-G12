@@ -67,23 +67,23 @@ void joystick (void){
         voltagey = (adc_resulty);
 
         if(voltagex >=1000){ //set threshold to start moving
-            move_right(5,500);
+            move_right(100,500);
             printf("moveright \n");
         }
         if(voltagex <=50){
-            move_left(5,500);
+            move_left(100,500);
             printf("moveleft \n");
         }
         if(voltagey >=1000){
-            move_up(5,500);
+            move_up(100,500);
             printf("moveup \n");
         }
         if(voltagey <=50){
-            move_down(5,500);
+            move_down(100,500);
             printf("movedown \n");
         }
 
-        while(voltagex == (512||511||513) && voltagey == (512||511||513) && timeroverflow<=5000){
+        /*while(voltagex == (512||511||513) && voltagey == (512||511||513) && timeroverflow<=5000){
             //set the Timer Mode to CTC
             TCCR0A |= (1<<WGM01);
             //Set value that you want to count to 
@@ -100,7 +100,7 @@ void joystick (void){
         if (timeroverflow<=4999){
             timeroverflow = 0;
             joystickflag = 0;
-        }
+        }*/
     }
     
 }
