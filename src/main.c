@@ -114,7 +114,8 @@ int main(void) {
 	usart_send(6);// " Press Button 1 two times when you want to stop playing. Good Luck!" 
 	_delay_ms(4000);
 	change_position();
-	//SPEAKER: you have 8 seconds to get the ball in
+	usart_send(44); // "you have 8 seconds to get the ball in"
+	_delay_ms(3000);
 	while (attempt<=2){
 		shotin = detect_ball();
 		if (shotin == 1){
@@ -149,7 +150,8 @@ int main(void) {
 	usart_send (6); //" Press Button 1 two times when you want to stop playing. Good Luck!"
 	_delay_ms(4000);
 	joystick();
-	//SPEAKER: you have 8 seconds to get the ball in
+	usart_send(44);// "you have 8 seconds to get the ball in"
+	_delay_ms(3000); 
 	while (attempt<=2){
 		shotin =detect_ball();
 		if (shotin == 1){
@@ -185,7 +187,8 @@ int main(void) {
 	change_position();
 	usart_send(19);// "beep"
 	_dealy_ms(1000); 
-	//SPEAKER: you have 8 seconds to get the ball in
+	usart_send (44)//"you have 8 seconds to get the ball in"
+	_delay_ms(3000);
 	while (attempt<=2){
 		shotin =detect_ball();
 		if (shotin == 1){
@@ -220,7 +223,8 @@ int main(void) {
 	joystick();
 	usart_send(19); // "beep" 
 	_delay_ms(1000);
-	//SPEAKER: you have 8 seconds to get the ball in
+	usart_send(44); //"you have 8 seconds to get the ball in"
+	_delay_ms(3000);
 	while (attempt<=2){
 		shotin =detect_ball();
 		if (shotin == 1){
