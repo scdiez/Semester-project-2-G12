@@ -8,8 +8,9 @@
 //Vrx to A0
 //Vry to A1
 
-#define JOYSTICK_Y 0 //ADC channels we'll use
-#define JOYSTICK_X 1 
+#define JOYSTICK_Y 0 //ADC channels we'll use A0
+#define JOYSTICK_X 1 //A1
+#define JOYSTICK_SW 12 //Joystick button D12
 
 //Joystick functions
 void joystick ();
@@ -21,6 +22,7 @@ int voltagex;
 uint16_t adc_resulty;
 uint16_t adc_resultx;
 int joystickflag;
+int buttonstate = 1;
 
 int main (void){
 
@@ -33,9 +35,10 @@ int main (void){
     PORTB = 1<<5;
     ADMUX = (1<<REFS0); //Select vref = avcc
     ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
+    DDRB &= ~(1 << DDB4); // Set button as an input
+    PORTB |= (1 << PORTB4); // Enable pull-up resistor so it reads high when not pressed
 
     joystick();
-
 
 }
 
@@ -68,6 +71,15 @@ void joystick (void){
         if(voltagey <=50){
             printf("movemotor down \n");
         }
+
+        if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
+            printf("Button pressed \n");
+        }
+
+        if ((PINB & (1 << PINB4))) { // Button is active high, so it is unpressed when the pin reads high
+            printf("Button unpressed \n");
+        }
+         
     }
     
 }
