@@ -98,49 +98,39 @@ int main(void) {
     DDRB &= ~(1 << DDB1);// Set echoPin as an input
     PORTB |= (1 << PORTB1);// Enable internal pull-up resistor for echoPin
 	
-	usart_send(1); //"press any button to start the game"
-	_delay_ms(2000);
+	/*usart_send(1); //"press any button to start the game"
+	_delay_ms(2000);*/
 
-	zero();
 	while (1){
-	
-	//BUTTON 1 IS PRESSED TWICE { 
-	if(score==0){
-		usart_send(4); //" You lost Better luck next time" 
-		_delay_ms(2000);
-	} else{
-		usart_send(5); //"You won, congrats your score is x"
-		_delay_ms(2000);
-	}
-	//} END OF BUTTON 1 PRESSED TWICE
+
 
 	if (!(PINB & (1 << PINB4))){
-	usart_send(13); //"You've selected vision single player"
+	/*usart_send(13); //"You've selected vision single player"
 	_delay_ms(3000);
 	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
 	_delay_ms(4000);
 	usart_send(6);// " Press Button 1 two times when you want to stop playing. Good Luck!" 
-	_delay_ms(4000);
+	_delay_ms(4000);*/
 	change_position();
-	usart_send(44); // "you have 8 seconds to get the ball in"
-	_delay_ms(3000);
+	/*usart_send(44); // "you have 8 seconds to get the ball in"
+	_delay_ms(3000);*/
 	while (attempt<=2){
 		shotin = detect_ball();
 		if (shotin == 1){
 			score++; //Incremement the score when an object is detected
-			usart_send(2);//"You scored a point"
+			/*usart_send(2);//"You scored a point"
 			_delay_ms(2000);
 			usart_send(18);//"Current score:"
 			_delay_ms(1000);
 			usart_send(score + 20); //"Number"
-			_delay_ms(1000);
-			attempt=0; 
-			change_position();
+			_delay_ms((1000);*/
+			move_right(1000, 500);
+			attempt=0;
 		}
 		//_delay_ms()
 		if (shotin == 0){
-			usart_send(3); // "try again to shoot"
-			_delay_ms(1000);
+			/*usart_send(3); // "try again to shoot"
+			_delay_ms(1000);*/
 			attempt ++;
 		}
 	}
@@ -149,6 +139,8 @@ int main(void) {
 	_delay_ms(5000);
 	zero();
 	} 
+	}
+}
 
 void start_pulse() {
     pulse_start = TCNT1; // Record the timer value at the start of the pulse
@@ -288,8 +280,8 @@ void joystick (void){
 
 void change_position(void){
 	srand(time(0));
-    target_x = rand() % 50;
-    target_y = rand() % 50;
+    target_x = rand() % 5000+50;
+    target_y = rand() % 5000+50;
     
 	move_x = target_x - current_x;
 	move_y = target_y - current_y;
