@@ -114,7 +114,7 @@ int main(void) {
 	}
 	//} END OF BUTTON 1 PRESSED TWICE
 
-	if (PINC == 0b00111110){
+	if (!(PINB & (1 << PINB4))){
 	usart_send(13); //"You've selected vision single player"
 	_delay_ms(3000);
 	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
@@ -149,116 +149,6 @@ int main(void) {
 	_delay_ms(5000);
 	zero();
 	} 
-
-	if (PINC == 0b00111101){
-	usart_send(14);//"You've selected vision multi player"
-	_delay_ms(3000);
-	usart_send(8);//"Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	_delay_ms(9000);
-	usart_send (6); //" Press Button 1 two times when you want to stop playing. Good Luck!"
-	_delay_ms(4000);
-	joystick();
-	usart_send(44);// "you have 8 seconds to get the ball in"
-	_delay_ms(3000); 
-	while (attempt<=2){
-		shotin =detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-			usart_send(2);//SPEAKER "You scored a point"
-			//_delay_ms()
-			usart_send(18);//"Current score: score points"
-			// _delay_ms()
-			attempt=0; 
-			change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
-			usart_send(3); // "try again to shoot"
-			_delay_ms(1000);
-			attempt ++;
-		}
-	}
-	attempt = 0;
-	}
-	usart_send(41);//"You have used all your attempts. Press Button 2 if you want to start playing again" 
-	_delay_ms(6000);
-	zero();
-
-
-	if (PINC == 0b00111011){
-	usart_send(15); //"You've selected no vision single player"
-	_delay_ms(2000); 
-	usart_send(7); // "The basketball hoop will now move to score"
-	_delay_ms(4000); 
-	usart_send(6); //" Press Button 1 two times when you want to stop playing. Good Luck!"
-	_delay_ms(4000);
-	change_position();
-	usart_send(19);// "beep"
-	_dealy_ms(1000); 
-	usart_send (44)//"you have 8 seconds to get the ball in"
-	_delay_ms(3000);
-	while (attempt<=2){
-		shotin =detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-			usart_send(2);//SPEAKER "You scored a point"
-			//_delay_ms()
-			usart_send(18);//"Current score: score points"
-			// _delay_ms()
-			attempt=0; 
-			change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
-			usart_send(3);// "try again to shoot"
-			_delay_ms(1000);
-			attempt ++;
-		}
-	}
-	attempt = 0;
-	usart_send(42);//" You have used all your attempts. Press Button 3 if you want to start playing again" 
-	_delay_ms(6000);
-	zero();
-	} 
-	if (PINC == 0b00110111){
-
-	usart_send(16);//"You've selected no vision multi player"
-	_delay_ms(2000);
-	usart_send(8); // "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	_delay_ms(9000);
-	usart_send(6);//" Press Button 1 two times when you want to stop playing. Good Luck!"
-	_delay_ms(4000);
-	joystick();
-	usart_send(19); // "beep" 
-	_delay_ms(1000);
-	usart_send(44); //"you have 8 seconds to get the ball in"
-	_delay_ms(3000);
-	while (attempt<=2){
-		shotin =detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-			usart_send(2);//"You scored a point"
-			//_delay_ms()
-			usart_send(18);//"Current score: score points"
-			// _delay_ms()
-			attempt=0; 
-			change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
-			usart_send(3);// "Try again to shoot"
-			_delay_ms(1000);
-			attempt ++;
-		}
-	}
-	attempt = 0;
-	}
-	usart_send(43)//" You have used all your attempts. Press Button 4 if you want to start playing again" 
-	_delay_ms(6000);
-	zero();
-	}
-		
-}
 
 void start_pulse() {
     pulse_start = TCNT1; // Record the timer value at the start of the pulse
