@@ -19,12 +19,27 @@ volatile int distance;
 unsigned int trial_time = 0;
 int counter = 0;
 int sensorflag = 0;
+int sensornumber;
 
 void start_pulse(void);
 
 void end_pulse(void);
 
 int detect_ball (void);
+
+
+//functions for motor movement
+void move_left(int, int);
+void move_right(int, int);
+void move_up (int, int);
+void move_down(int, int);
+void change_position(void);
+void zero(void);
+
+//variables for motor movement 
+int target_x,target_y, move_x, move_y;
+int current_x=0;
+int current_y=0;
 
 int main(void)
 {
@@ -36,12 +51,24 @@ int main(void)
     DDRB &= ~(1 << DDB1);// Set echoPin as an input
     PORTB |= (1 << PORTB1);// Enable internal pull-up resistor for echoPin
 
-	printf("%d", detect_ball());
-	printf("%d", detect_ball());
-	printf("%d", detect_ball());
-	printf("%d", detect_ball());
 
-    return 0;
+	 //motor configuration
+    DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
+	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
+	
+
+	for (int i = 0; i<6; i++){
+		printf("%d \n", i);
+		sensornumber = detect_ball();
+		if (sensornumber == 3){
+			move_right(1000, 500);
+		}
+		if (sensornumber == 2){
+			move_left(1000, 500);
+		}
+		return 0;
+	}
+	
 }
 
 void start_pulse() {
@@ -87,4 +114,55 @@ int detect_ball (void){
 			counter = 0;
         }
     }
+}
+
+void move_left(int steps, int delay){
+	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
+	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+        for (int x = 0; x < steps; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+			}
+}
+void move_right(int steps, int delay){
+	PORTD &= ~(1 << PORTD4); // Set dirPin LOW to change direction of rotation
+	PORTD &= ~(1 << PORTD2);
+        for (int x = 0; x < steps; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+        }
+}
+
+void move_up(int steps, int delay){
+	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
+	PORTD &= ~(1 << PORTD2);
+        for (int x = 0; x < steps; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+        }
+}
+
+void move_down(int steps, int delay){
+	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+	PORTD &= ~(1 << PORTD4);
+        for (int x = 0; x < steps; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+        }
 }
