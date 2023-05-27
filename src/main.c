@@ -104,7 +104,7 @@ int main(void) {
 	usart_send(1); //"press any button to start the game"
 	_delay_ms(2000);
 
-	zero();
+	
 	while (1){
 	
 	//BUTTON 1 IS PRESSED TWICE { 
@@ -186,6 +186,8 @@ int main(void) {
 	usart_send(41);//"You have used all your attempts. Press Button 2 if you want to start playing again" 
 	_delay_ms(6000);
 	zero();
+	}
+}
 
 
 	if (PINC == 0b00111011){
@@ -255,7 +257,6 @@ int main(void) {
 		}
 	}
 	attempt = 0;
-	}
 	usart_send(43);//" You have used all your attempts. Press Button 4 if you want to start playing again" 
 	_delay_ms(6000);
 	zero();
@@ -401,8 +402,8 @@ void joystick (void){
 
 void change_position(void){
 	srand(time(0));
-    target_x = rand() % 50;
-    target_y = rand() % 50;
+    target_x = rand() % 5000+50;
+    target_y = rand() % 5000+50;
     
 	move_x = target_x - current_x;
 	move_y = target_y - current_y;
