@@ -1,3 +1,6 @@
+//Audio 17 needs modification to also say current score
+
+
 #define __DELAY_BACKWARD_COMPATIBLE__ //so that delays can be set with variables
 
 #include <avr/io.h>
