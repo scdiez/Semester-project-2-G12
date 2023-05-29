@@ -104,7 +104,7 @@ int main(void) {
 	while (1){
 
 
-	if (!(PINB & (1 << PINB4))){
+	//if (PINC == 0b00111110){ //Button 1 pressed
 	/*usart_send(13); //"You've selected vision single player"
 	_delay_ms(3000);
 	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
@@ -124,7 +124,7 @@ int main(void) {
 			_delay_ms(1000);
 			usart_send(score + 20); //"Number"
 			_delay_ms((1000);*/
-			move_right(1000, 500);
+			change_position();
 			attempt=0;
 		}
 		//_delay_ms()
@@ -135,12 +135,12 @@ int main(void) {
 		}
 	}
 	attempt = 0;
-	usart_send(17); // " You have used all your attempts. Press Button 1 if you want to start playing again" 
-	_delay_ms(5000);
-	zero();
+	/*usart_send(17); // " You have used all your attempts. Press Button 1 if you want to start playing again" 
+	_delay_ms(5000);*/
+	move_up(1000, 500); //done do test whole code
 	} 
 	}
-}
+//}
 
 void start_pulse() {
     pulse_start = TCNT1; // Record the timer value at the start of the pulse
@@ -177,11 +177,12 @@ int detect_ball (void){
         distance = pulse_duration * 0.017 / 2;// Calculate the distance
         if (distance < 9.5) {
 			sensorflag = 1;
-			return (2); //Number of audio for "You scored a point"
+			return (1); 
         }
 
         if (distance > 9.5 && sensorcounter>= 120) { //edit counter value for a longer time for shooting 
-            return (3); //Audio for "Try again to shoot" 
+            return (0); 
+            sensorflag = 1;
 			sensorcounter = 0;
         }
     }
