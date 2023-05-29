@@ -94,7 +94,7 @@ int main(void) {
 
     //Motor configuration
     DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
-	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
+	  DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
 	//Motion sensor configuration
     DDRB |= (1 << DDB0);  //Set trigPin as output
@@ -105,7 +105,7 @@ int main(void) {
 	_delay_ms(2000);
 
 	
-	while (1){
+	while (1){ //while(read_voltage()>=6.8){
 	
 	//BUTTON 1 IS PRESSED TWICE { 
 	if(score==0){
