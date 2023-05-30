@@ -80,26 +80,20 @@ int main(void) {
     io_redirect();
 	usart_init();
 	
-	//Button configuration?
-    DDRC = 0xF0;
+	//Button configuration
+  DDRC = 0xF0;
 	PORTC = 0x3F;
 
-	//Joystick configuration
-    DDRB = 1<<5;
-    PORTB = 1<<5;
+	//Joystick and motion sensor configuration
+    DDRB = 0b00100001;
+    PORTB = 0b00110010;
     ADMUX = (1<<REFS0); //Select vref = avcc
     ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
-    DDRB &= ~(1 << DDB4); // Set button as an input
-    PORTB |= (1 << PORTB4); // Enable pull-up resistor so it reads high when not pressed
+    
 
     //Motor configuration
     DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
 	  DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
-
-	//Motion sensor configuration
-    DDRB |= (1 << DDB0);  //Set trigPin as output
-    DDRB &= ~(1 << DDB1);// Set echoPin as an input
-    PORTB |= (1 << PORTB1);// Enable internal pull-up resistor for echoPin
 	
 	usart_send(1); //"press any button to start the game"
 	_delay_ms(2000);
@@ -187,7 +181,7 @@ int main(void) {
 	_delay_ms(6000);
 	zero();
 	}
-}
+
 
 
 	if (PINC == 0b00111011){
