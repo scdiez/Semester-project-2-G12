@@ -422,10 +422,10 @@ void change_position(void){
 	}
 }
 
-//Using max steps 500,500
+//Using max steps 15900,16200
 void zero(void){
-	move_x = 0 - current_x;
-	move_y = 0 - current_y;
+	move_x = 300 - current_x;
+	move_y = 300 - current_y;
 
 	if (move_x>0){
 		move_right(move_x, 400);
