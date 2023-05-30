@@ -107,7 +107,7 @@ int main(void) {
 	
 	while (1){
 		
-	if (!(PINB & (1 << PINB4))){
+	if (PINC == 0b00111110){
 	change_position();
 		usart_send(19);
 		_delay_ms(1000);
