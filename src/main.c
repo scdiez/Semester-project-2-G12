@@ -1,3 +1,6 @@
+#define __DELAY_BACKWARD_COMPATIBLE__ //so that delays can be set with variables
+
+
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/delay.h>
@@ -44,7 +47,6 @@ void move_left(int, int);
 void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
-void change_position(void);
 void zero(void);
 
 //Joystick variables
@@ -77,9 +79,15 @@ int main (void){
     DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
 	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
-    joystick();
 
-    printf("done");
+    joystick();
+    
+    printf("%d", current_x);
+    printf("%d", current_y);
+
+    zero();
+
+    /*printf("done");
     shotin = detect_ball();
 
     if (shotin == 1){
@@ -87,7 +95,7 @@ int main (void){
     }
     if (shotin == 0){
         printf("ball out");
-    }
+    }*/
 
 
 
@@ -105,18 +113,22 @@ void joystick (void){
         if(voltagex >=1000){ //set threshold to start moving
             move_right(600,200);
             printf("moveright \n");
+            printf("%d", current_x);
         }
         if(voltagex <=50){
             move_left(600,200);
             printf("moveleft \n");
+            printf("%d", current_x);
         }
         if(voltagey >=1000){
             move_up(600,200);
             printf("moveup \n");
+            printf("%d", current_y);
         }
         if(voltagey <=50){
             move_down(600,200);
             printf("movedown \n");
+            printf("%d", current_y);
         }
 
         if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
@@ -127,7 +139,7 @@ void joystick (void){
     
 }
 
-void move_left(int steps, int delay){
+void move_right(int steps, int delay){
 	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
 	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
         for (int x = 0; x < steps; x++) {
@@ -137,9 +149,10 @@ void move_left(int steps, int delay){
             PORTD &= ~(1 << PORTD6); // Set stepPin LOW
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
-			}
+		}
+    current_x = current_x+steps;
 }
-void move_right(int steps, int delay){
+void move_left(int steps, int delay){
 	PORTD &= ~(1 << PORTD4); // Set dirPin LOW to change direction of rotation
 	PORTD &= ~(1 << PORTD2);
         for (int x = 0; x < steps; x++) {
@@ -150,9 +163,10 @@ void move_right(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
+    current_x = current_x-steps;
 }
 
-void move_up(int steps, int delay){
+void move_down(int steps, int delay){
 	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
 	PORTD &= ~(1 << PORTD2);
         for (int x = 0; x < steps; x++) {
@@ -163,9 +177,10 @@ void move_up(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
+    current_y = current_y-steps;
 }
 
-void move_down(int steps, int delay){
+void move_up(int steps, int delay){
 	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
 	PORTD &= ~(1 << PORTD4);
         for (int x = 0; x < steps; x++) {
@@ -176,6 +191,7 @@ void move_down(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
+    current_y = current_y+steps;
 }
 
 uint16_t adc_read(uint8_t adc_channel){
@@ -229,4 +245,12 @@ int detect_ball (void){
 			counter = 0;
         }
     }
+}
+
+void zero(void){
+	move_x = current_x-300;
+	move_y = current_y -300;
+
+	move_left(move_x, 300);
+    move_down(move_y, 300);
 }
