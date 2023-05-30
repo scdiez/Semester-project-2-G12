@@ -6,7 +6,7 @@
 #include <util/delay.h>
 #include "i2cmaster.h"
 #include "lcd.h"
-#include "usart.h"
+//#include "usart.h"
 #include <avr/interrupt.h>
 
 //Vrx to A0
@@ -71,9 +71,9 @@ int current_x=0;
 int current_y=0;
 
 int main (void){
-
-    uart_init();
-    io_redirect();
+    //usart_init();
+    //uart_init();
+    //io_redirect();
     sei(); // Enable global interrupts
 
     DDRB = 0b00100001;
