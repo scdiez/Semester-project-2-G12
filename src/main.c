@@ -63,7 +63,6 @@ int buttonstate = 1;
 
 //speaker functions
 void usart_init(void);
-unsigned char usart_receive(void);
 void usart_send (unsigned char data);
 
 //variables for motor movement 
@@ -90,8 +89,6 @@ int main (void){
 
 
     joystick();
-    usart_send(7); //The basketball hoop will now move. You get 3 attempts to score
-    _delay_ms(4000);
     
     printf("%d", current_x);
     printf("%d", current_y);
