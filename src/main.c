@@ -13,6 +13,8 @@
 //Vry to A1
 
 #define F_CPU 16000000UL //DEFINE BAUDRATE AS 9600
+#define BAUDRATE 9600
+#define BAUD_PRESCALER (((F_CPU/(BAUDRATE*16UL)))-1)
 
 #define trigPin 8
 #define echopin 9
@@ -24,6 +26,7 @@
 #define JOYSTICK_SW 12 //Joystick button D12
 
 
+//sensor variables
 volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
 volatile unsigned long pulse_duration;
@@ -33,6 +36,7 @@ int counter = 0;
 int sensorflag = 0;
 int shotin=0;
 
+//sensor functions
 void start_pulse(void);
 void end_pulse(void);
 int detect_ball (void);
@@ -56,6 +60,11 @@ uint16_t adc_resulty;
 uint16_t adc_resultx;
 int joystickflag;
 int buttonstate = 1;
+
+//speaker functions
+void usart_init(void);
+unsigned char usart_receive(void);
+void usart_send (unsigned char data);
 
 //variables for motor movement 
 int target_x,target_y, move_x, move_y;
@@ -81,6 +90,8 @@ int main (void){
 
 
     joystick();
+    usart_send(7); //The basketball hoop will now move. You get 3 attempts to score
+    _delay_ms(4000);
     
     printf("%d", current_x);
     printf("%d", current_y);
@@ -253,4 +264,16 @@ void zero(void){
 
 	move_left(move_x, 300);
     move_down(move_y, 300);
+}
+
+void usart_init(void){
+    UBRR0H = (uint8_t)(BAUD_PRESCALER>>8);
+    UBRR0L = (uint8_t)(BAUD_PRESCALER);
+    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+    UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
+}
+
+void usart_send (unsigned char data){
+    while(!(UCSR0A & (1<<UDRE0))); //wait for new data
+    UDR0 = data;
 }
