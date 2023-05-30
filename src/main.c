@@ -76,6 +76,7 @@ int main (void){
     //io_redirect();
     sei(); // Enable global interrupts
 
+    //Joystick and sensor  configuration
     DDRB = 0b00100001;
     PORTB = 0b00110010;
 
