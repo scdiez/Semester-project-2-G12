@@ -96,6 +96,7 @@ int main (void){
 
   while (1){
     if (PINC == 0b00111110){ //First button pressed
+      printf("First button pressed");
       joystick();
       printf("done");
       shotin = detect_ball();
@@ -110,6 +111,7 @@ int main (void){
     }
 
     if (PINC == 0b00111101){
+      printf("Second button pressed");
       zero();
     }
   }
