@@ -56,7 +56,8 @@ void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
 void zero(void);
-void change_position(void);
+void change_positionx(void);
+void change_positiony(void);
 
 //Joystick variables
 int voltagey;
@@ -76,7 +77,7 @@ int current_x=300;
 int current_y=300;
 
 int main (void){
-    srand(time(0));
+    srand(time(NULL));
     //usart_init();
     uart_init();
     io_redirect();
@@ -104,8 +105,10 @@ int main (void){
     if (PINC == 0b00110111){ //First button pressed
       printf("You've selected vision single player \n");
       printf("The basketball hoop will now move. You get 3 attempts to score. \n");
-      //printf("Press Button 1 if you want to stop playing. Good Luck! \n");
-      change_position();
+      printf("Press Button 1 if you want to stop playing. Good Luck! \n");
+      change_positionx();
+      change_positiony();
+      
       printf("You have 8 seconds to get the ball in \n");
       while (attempt<=2){
 		while(result == 0){
@@ -120,9 +123,10 @@ int main (void){
 			printf("You scored a point \n");
 			printf("Current score: ");
 			printf("%d \n",score);
+            move_right(14000-current_x, 200);
+            move_up(14000-current_y, 200);
 			attempt=0; 
             result = 0;
-            move_right(3000, 500);
         }
 		if (result == 2){
             _delay_ms(5000);
@@ -300,24 +304,28 @@ int detect_ball (void){
     }
 }
 
-void change_position(void){
-    target_x = rand() % 16200;
-    target_y = rand() % 15900;
-    
-	move_x = target_x - current_x;
-	move_y = target_y - current_y;
+void change_positiony(void){
+    target_y = rand() % 15900+500;
+    move_y = target_y - current_y;
+    if (move_y<0)
+    {
+        move_down(move_y, 200);
+    }
+	else if (move_y>0){
+		move_up(move_y, 200);
+	}
+}
 
-	if (move_x>0){
-		move_right(move_x, 400);
-	}
-	if (move_x<0){
-		move_left(move_x, 400);
-	}
-	if (move_y>0){
-		move_up(move_y, 400);
-	}
-	if (move_y<0){
-		move_down(move_y, 400);
+void change_positionx(void){
+    target_x = rand() % 16200+500;
+    move_x = target_x - current_x;
+
+	if (move_x<0)
+    {
+        move_left(move_x, 200);
+    }
+	else if (move_x>0){
+		move_right(move_x, 200);
 	}
 }
 
