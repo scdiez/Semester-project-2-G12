@@ -67,8 +67,8 @@ void usart_send (unsigned char data);
 
 //variables for motor movement 
 int target_x,target_y, move_x, move_y;
-int current_x=0;
-int current_y=0;
+int current_x=300;
+int current_y=300;
 
 int main (void){
     //usart_init();
@@ -86,7 +86,7 @@ int main (void){
 
     //motor configuration
     DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
-	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
+	  DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
 
     joystick();
