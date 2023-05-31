@@ -23,24 +23,24 @@ int main(void) {
 
     while(1)
     {
-        if (PINC == 0b00111110)
-        {
-            printf("1");
-			_delay_ms(500);
-        }
-        if (PINC == 0b00111101)
-        {
-            printf("2");
-			_delay_ms(500);
-        }
         if (PINC == 0b00111011)
         {
-            printf("3");
+            printf("4");
 			_delay_ms(500);
         }
         if (PINC == 0b00110111)
         {
-            printf("4");
+            printf("1");
+			_delay_ms(500);
+        }
+        if (PINC == 0b00101111)
+        {
+            printf("2");
+			_delay_ms(500);
+        }
+        if (PINC == 0b00011111)
+        {
+            printf("3");
 			_delay_ms(500);
         }
     }
@@ -49,5 +49,6 @@ int main(void) {
        
     return 0;
 }
+
 
 
