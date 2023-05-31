@@ -71,42 +71,48 @@ int current_x=300;
 int current_y=300;
 
 int main (void){
-    //usart_init();
-    //uart_init();
-    //io_redirect();
-    sei(); // Enable global interrupts
+  //usart_init();
+  //uart_init();
+  //io_redirect();
+  sei(); // Enable global interrupts
 
-    //Joystick and sensor  configuration
-    DDRB = 0b00100001;
-    PORTB = 0b00110010;
+  //Joystick and sensor  configuration
+  DDRB = 0b00100001;
+  PORTB = 0b00110010;
 
-    //Joystick configuration
-    ADMUX = (1<<REFS0); //Select vref = avcc
-    ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
+  //Joystick configuration
+  ADMUX = (1<<REFS0); //Select vref = avcc
+  ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
 
-    //motor configuration
-    DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
-	  DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
+  //motor configuration
+  DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
+	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
+  //Button configuration
+  DDRC = 0xF0;
+	PORTC = 0x3F;
 
-    joystick();
-    
-    printf("%d", current_x);
-    printf("%d", current_y);
+  //PRESS ANY BUTTON TO START THE GAME
 
-    zero();
+  while (1){
+    if (PINC == 0b00111110){ //First button pressed
+      joystick();
+      printf("done");
+      shotin = detect_ball();
 
-    /*printf("done");
-    shotin = detect_ball();
-
-    if (shotin == 1){
+      if (shotin == 1){
         printf("ball in");
-    }
-    if (shotin == 0){
+      }
+      if (shotin == 0){
         printf("ball out");
-    }*/
+      }
 
+    }
 
+    if (PINC == 0b00111101){
+      zero();
+    }
+  }
 
 }
 
