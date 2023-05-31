@@ -72,8 +72,8 @@ int current_y=300;
 
 int main (void){
   //usart_init();
-  //uart_init();
-  //io_redirect();
+  uart_init();
+  io_redirect();
   sei(); // Enable global interrupts
 
   //Joystick and sensor  configuration
@@ -86,16 +86,16 @@ int main (void){
 
   //motor configuration
   DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
-	DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
+    DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
-  //Button configuration
-  DDRC = 0xF0;
-	PORTC = 0x3F;
+    //Button configuration
+    DDRC = 0xF0;
+    PORTC = 0x3F;
 
   //PRESS ANY BUTTON TO START THE GAME
 
   while (1){
-    if (PINC == 0b00111110){ //First button pressed
+    if (PINC == 0b00110111){ //First button pressed
       printf("First button pressed");
       joystick();
       printf("done");
@@ -110,8 +110,17 @@ int main (void){
 
     }
 
-    if (PINC == 0b00111101){
+    if (PINC == 0b00101111){
       printf("Second button pressed");
+      zero();
+    }
+
+    if (PINC == 0b00011111){
+      printf("Third button pressed");
+      zero();
+    }
+    if (PINC == 0b00111011){
+      printf("Fourth button pressed");
       zero();
     }
   }
@@ -157,8 +166,8 @@ void joystick (void){
 }
 
 void move_right(int steps, int delay){
-	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
-	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+	PORTD &= ~(1 << PORTD4); // Set dirPin LOW to change direction of rotation
+	PORTD &= ~(1 << PORTD2);
         for (int x = 0; x < steps; x++) {
             PORTD |= (1 << PORTD6); // Set stepPin HIGH
 			PORTD |= (1 << PORTD5); // Set stepPin HIGH
@@ -170,8 +179,8 @@ void move_right(int steps, int delay){
     current_x = current_x+steps;
 }
 void move_left(int steps, int delay){
-	PORTD &= ~(1 << PORTD4); // Set dirPin LOW to change direction of rotation
-	PORTD &= ~(1 << PORTD2);
+    PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
+	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
         for (int x = 0; x < steps; x++) {
             PORTD |= (1 << PORTD6); // Set stepPin HIGH
 			PORTD |= (1 << PORTD5); // Set stepPin HIGH
@@ -184,8 +193,8 @@ void move_left(int steps, int delay){
 }
 
 void move_down(int steps, int delay){
-	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
-	PORTD &= ~(1 << PORTD2);
+	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+	PORTD &= ~(1 << PORTD4);
         for (int x = 0; x < steps; x++) {
             PORTD |= (1 << PORTD6); // Set stepPin HIGH
 			PORTD |= (1 << PORTD5); // Set stepPin HIGH
@@ -198,8 +207,8 @@ void move_down(int steps, int delay){
 }
 
 void move_up(int steps, int delay){
-	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
-	PORTD &= ~(1 << PORTD4);
+    PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
+	PORTD &= ~(1 << PORTD2);
         for (int x = 0; x < steps; x++) {
             PORTD |= (1 << PORTD6); // Set stepPin HIGH
 			PORTD |= (1 << PORTD5); // Set stepPin HIGH
