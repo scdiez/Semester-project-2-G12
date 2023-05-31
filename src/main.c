@@ -141,8 +141,38 @@ int main (void){
     }
 
     if (PINC == 0b00101111){
-      printf("Second button pressed");
-      zero();
+      printf("You've selected vision multiplayer \n");
+      printf("Move the basket with the joystick.Press the button to fix the position. You get 3 attempts to score. \n");
+      printf("Press Button 2 if you want to stop playing. Good Luck! \n");
+      joystick();
+      
+      printf("You have 8 seconds to get the ball in \n");
+      while (attempt<=2){
+		while(result == 0){
+            detect_ball();
+            if(PINC == 0b00110111){
+                printf("Finish game");
+                attempt = 2;
+            }
+        }
+        if (result == 1){
+            score++; //Incremement the score when an object is detected
+			printf("You scored a point \n");
+			printf("Current score: ");
+			printf("%d \n",score);
+            joystick();
+            result = 0;
+        }
+		if (result == 2){
+            _delay_ms(5000);
+			printf("Try again to shoot \n");
+			attempt ++;
+            result = 0;
+		}
+	    }
+        attempt = 0;
+        printf("You have used all your attempts. Press Button 2 if you want to start playing again");
+        zero();
     }
 
     if (PINC == 0b00011111){
