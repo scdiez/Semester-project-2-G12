@@ -123,14 +123,14 @@ int main (void){
 			printf("You scored a point \n");
 			printf("Current score: ");
 			printf("%d \n",score);
-            move_right(14000-current_x, 200);
-            move_up(14000-current_y, 200);
+            change_positionx();
+            change_positiony();
 			attempt=0; 
             result = 0;
         }
 		if (result == 2){
             _delay_ms(5000);
-			printf("Try again to shoot \n");
+			printf("Shoot now \n");
 			attempt ++;
             result = 0;
 		}
@@ -165,7 +165,7 @@ int main (void){
         }
 		if (result == 2){
             _delay_ms(5000);
-			printf("Try again to shoot \n");
+			printf("Shoot now \n");
 			attempt ++;
             result = 0;
 		}
@@ -225,10 +225,25 @@ void joystick (void){
     
 }
 
-void move_right(int steps, int delay){
+
+void move_left(int stepsleft, int delay){
+    PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
+	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+        for (int x = 0; x < stepsleft; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+        }
+    current_x = current_x-stepsleft;
+}
+
+void move_right(int stepsright, int delay){
 	PORTD &= ~(1 << PORTD4); // Set dirPin LOW to change direction of rotation
 	PORTD &= ~(1 << PORTD2);
-        for (int x = 0; x < steps; x++) {
+        for (int x = 0; x < stepsright; x++) {
             PORTD |= (1 << PORTD6); // Set stepPin HIGH
 			PORTD |= (1 << PORTD5); // Set stepPin HIGH
             _delay_us(delay);
@@ -236,26 +251,13 @@ void move_right(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
 		}
-    current_x = current_x+steps;
-}
-void move_left(int steps, int delay){
-    PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
-	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
-        for (int x = 0; x < steps; x++) {
-            PORTD |= (1 << PORTD6); // Set stepPin HIGH
-			PORTD |= (1 << PORTD5); // Set stepPin HIGH
-            _delay_us(delay);
-            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
-			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
-            _delay_us(delay);
-        }
-    current_x = current_x-steps;
+    current_x = current_x+stepsright;
 }
 
-void move_down(int steps, int delay){
+void move_down(int stepsdown, int delay){
 	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
 	PORTD &= ~(1 << PORTD4);
-        for (int x = 0; x < steps; x++) {
+        for (int x = 0; x < stepsdown; x++) {
             PORTD |= (1 << PORTD6); // Set stepPin HIGH
 			PORTD |= (1 << PORTD5); // Set stepPin HIGH
             _delay_us(delay);
@@ -263,13 +265,13 @@ void move_down(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
-    current_y = current_y-steps;
+    current_y = current_y-stepsdown;
 }
 
-void move_up(int steps, int delay){
+void move_up(int stepsup, int delay){
     PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
 	PORTD &= ~(1 << PORTD2);
-        for (int x = 0; x < steps; x++) {
+        for (int x = 0; x < stepsup; x++) {
             PORTD |= (1 << PORTD6); // Set stepPin HIGH
 			PORTD |= (1 << PORTD5); // Set stepPin HIGH
             _delay_us(delay);
@@ -277,7 +279,7 @@ void move_up(int steps, int delay){
 			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
             _delay_us(delay);
         }
-    current_y = current_y+steps;
+    current_y = current_y+stepsup;
 }
 
 uint16_t adc_read(uint8_t adc_channel){
@@ -338,7 +340,8 @@ void change_positiony(void){
     target_y = rand() % 15900+500;
     move_y = target_y - current_y;
     if (move_y<0)
-    {
+    {   
+        move_y = move_y*(-1);
         move_down(move_y, 200);
     }
 	else if (move_y>0){
@@ -352,6 +355,7 @@ void change_positionx(void){
 
 	if (move_x<0)
     {
+        move_x = move_x*(-1);
         move_left(move_x, 200);
     }
 	else if (move_x>0){
@@ -363,8 +367,8 @@ void zero(void){
 	move_x = current_x-300;
 	move_y = current_y -300;
 
-	move_left(move_x, 300);
-    move_down(move_y, 300);
+	move_left(move_x, 200);
+    move_down(move_y, 200);
 }
 
 void usart_init(void){
