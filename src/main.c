@@ -8,6 +8,7 @@
 #include "lcd.h"
 //#include "usart.h"
 #include <avr/interrupt.h>
+#include <time.h>
 
 //Vrx to A0
 //Vry to A1
@@ -35,6 +36,8 @@ unsigned int trial_time = 0;
 int counter = 0;
 int sensorflag = 0;
 int shotin=0;
+int attempt = 0;
+int score = 0;
 
 //sensor functions
 void start_pulse(void);
@@ -96,18 +99,31 @@ int main (void){
 
   while (1){
     if (PINC == 0b00110111){ //First button pressed
-      printf("First button pressed");
-      joystick();
-      printf("done");
-      shotin = detect_ball();
-
-      if (shotin == 1){
-        printf("ball in");
-      }
-      if (shotin == 0){
-        printf("ball out");
-      }
-
+      printf("You've selected vision single player \n");
+      printf("The basketball hoop will now move. You get 3 attempts to score. \n");
+      //printf("Press Button 1 if you want to stop playing. Good Luck! \n");
+      change_position();
+      printf("You have 8 seconds to get the ball in \n");
+      while (attempt<=2){
+		shotin = detect_ball();
+		if (shotin == 1){
+			score++; //Incremement the score when an object is detected
+            _delay_ms(2000);
+			printf("You scored a point \n");
+			printf("Current score: ");
+			printf("%d \n",score);
+			attempt=0; 
+            change_position();
+		}
+		//_delay_ms()
+		if (shotin == 0){
+            _delay_ms(5000);
+			printf("Try again to shoot \n");
+			attempt ++;
+		}
+	}
+    attempt = 0;
+    printf("You have used all your attempts. Press Button 1 if you want to start playing again");
     }
 
     if (PINC == 0b00101111){
@@ -117,7 +133,7 @@ int main (void){
 
     if (PINC == 0b00011111){
       printf("Third button pressed");
-      zero();
+      joystick();
     }
     if (PINC == 0b00111011){
       printf("Fourth button pressed");
@@ -271,6 +287,28 @@ int detect_ball (void){
 			counter = 0;
         }
     }
+}
+
+void change_position(void){
+	srand(time(0));
+    target_x = rand() % 16200;
+    target_y = rand() % 15900;
+    
+	move_x = target_x - current_x;
+	move_y = target_y - current_y;
+
+	if (move_x>0){
+		move_right(move_x, 400);
+	}
+	if (move_x<0){
+		move_left(move_x, 400);
+	}
+	if (move_y>0){
+		move_up(move_y, 400);
+	}
+	if (move_y<0){
+		move_down(move_y, 400);
+	}
 }
 
 void zero(void){
