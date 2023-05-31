@@ -6,7 +6,7 @@
 #include <util/delay.h>
 #include "i2cmaster.h"
 #include "lcd.h"
-//#include "usart.h"
+#include "usart.h"
 #include <avr/interrupt.h>
 #include <time.h>
 
@@ -38,6 +38,7 @@ int sensorflag = 0;
 int shotin=0;
 int attempt = 0;
 int score = 0;
+int result = 0;
 
 //sensor functions
 void start_pulse(void);
@@ -55,6 +56,7 @@ void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
 void zero(void);
+void change_position(void);
 
 //Joystick variables
 int voltagey;
@@ -74,21 +76,22 @@ int current_x=300;
 int current_y=300;
 
 int main (void){
-  //usart_init();
-  uart_init();
-  io_redirect();
-  sei(); // Enable global interrupts
+    srand(time(0));
+    //usart_init();
+    uart_init();
+    io_redirect();
+    sei(); // Enable global interrupts
 
-  //Joystick and sensor  configuration
-  DDRB = 0b00100001;
-  PORTB = 0b00110010;
+    //Joystick and sensor  configuration
+    DDRB = 0b00100001;
+    PORTB = 0b00110010;
 
-  //Joystick configuration
-  ADMUX = (1<<REFS0); //Select vref = avcc
-  ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
+    //Joystick configuration
+    ADMUX = (1<<REFS0); //Select vref = avcc
+    ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
 
-  //motor configuration
-  DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
+    //motor configuration
+    DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
     DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
 
     //Button configuration
@@ -105,25 +108,32 @@ int main (void){
       change_position();
       printf("You have 8 seconds to get the ball in \n");
       while (attempt<=2){
-		shotin = detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-            _delay_ms(2000);
+		while(result == 0){
+            detect_ball();
+            if(PINC == 0b00110111){
+                printf("Finish game");
+                attempt = 2;
+            }
+        }
+        if (result == 1){
+            score++; //Incremement the score when an object is detected
 			printf("You scored a point \n");
 			printf("Current score: ");
 			printf("%d \n",score);
 			attempt=0; 
-            change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
+            result = 0;
+            move_right(3000, 500);
+        }
+		if (result == 2){
             _delay_ms(5000);
 			printf("Try again to shoot \n");
 			attempt ++;
+            result = 0;
 		}
-	}
-    attempt = 0;
-    printf("You have used all your attempts. Press Button 1 if you want to start playing again");
+	    }
+        attempt = 0;
+        printf("You have used all your attempts. Press Button 1 if you want to start playing again");
+        zero();
     }
 
     if (PINC == 0b00101111){
@@ -279,18 +289,18 @@ int detect_ball (void){
         distance = pulse_duration * 0.017 / 2;// Calculate the distance
         if (distance < 9.5) {
 			sensorflag = 1;
-			return (1); //Number of audio for "You scored a point"
+			result = 1;
         }
 
         if (distance > 9.5 && counter>= 120) { //edit counter value for a longer time for shooting 
-            return (0); //Audio for "Try again to shoot" 
+            result = 2;
 			counter = 0;
         }
+        return (result);
     }
 }
 
 void change_position(void){
-	srand(time(0));
     target_x = rand() % 16200;
     target_y = rand() % 15900;
     
