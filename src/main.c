@@ -56,8 +56,7 @@ void move_right(int, int);
 void move_up (int, int);
 void move_down(int, int);
 void zero(void);
-void change_positionx(void);
-void change_positiony(void);
+void change_position(void);
 
 //Joystick variables
 int voltagey;
@@ -106,8 +105,7 @@ int main (void){
       printf("You've selected vision single player \n");
       printf("The basketball hoop will now move. You get 3 attempts to score. \n");
       printf("Press Button 1 if you want to stop playing. Good Luck! \n");
-      change_positionx();
-      change_positiony();
+      change_position();
       
       printf("You have 8 seconds to get the ball in \n");
       while (attempt<=2){
@@ -123,8 +121,7 @@ int main (void){
 			printf("You scored a point \n");
 			printf("Current score: ");
 			printf("%d \n",score);
-            change_positionx();
-            change_positiony();
+            change_position();
 			attempt=0; 
             result = 0;
         }
@@ -336,9 +333,11 @@ int detect_ball (void){
     }
 }
 
-void change_positiony(void){
+void change_position(void){
     target_y = rand() % 15900+500;
+    target_x = rand() % 16200+500;
     move_y = target_y - current_y;
+    move_x = target_x - current_x;
     if (move_y<0)
     {   
         move_y = move_y*(-1);
@@ -347,12 +346,6 @@ void change_positiony(void){
 	else if (move_y>0){
 		move_up(move_y, 200);
 	}
-}
-
-void change_positionx(void){
-    target_x = rand() % 16200+500;
-    move_x = target_x - current_x;
-
 	if (move_x<0)
     {
         move_x = move_x*(-1);
