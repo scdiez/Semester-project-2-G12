@@ -133,7 +133,7 @@ int main (void){
 		}
 	    }
         attempt = 0;
-        printf("You have used all your attempts. Press Button 1 if you want to start playing again");
+        printf("You have used all your attempts. Your score is %d. Press button 1 if you want to start playing again, or another button for other mode \n", score);
         zero();
     }
 
