@@ -1,65 +1,51 @@
-//Audio 17 needs modification to also say current score
-
-
 #define __DELAY_BACKWARD_COMPATIBLE__ //so that delays can be set with variables
+
 
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/delay.h>
-#include <stdlib.h>
 #include "i2cmaster.h"
 #include "lcd.h"
 #include "usart.h"
-#include <time.h>
 #include <avr/interrupt.h>
-#define F_CPU 16000000UL //DEFINE BAUDRATE AS 9600
+#include <time.h>
 
-// USART comunication definitions
+
+#define F_CPU 16000000UL //DEFINE BAUDRATE AS 9600
 #define BAUDRATE 9600
 #define BAUD_PRESCALER (((F_CPU/(BAUDRATE*16UL)))-1)
 
-//Motion sensor connections
+
+//Sensor connections
 #define trigPin 8
 #define echopin 9
+
 
 //Joystick connections
 #define JOYSTICK_Y 0 //ADC channels we'll use A0
 #define JOYSTICK_X 1 //A1
-#define JOYSTICK_SW 12 //Joystick button D12 
-
-//functions for sensor 
-void start_pulse(void);
-void end_pulse(void);
-int detect_ball (void);
+#define JOYSTICK_SW 12 //Joystick button D12
 
 
-//function for joystick 
-uint16_t adc_read(uint8_t);
-void joystick(void);
-
-//functions for motor movement
-void move_left(int, int);
-void move_right(int, int);
-void move_up (int, int);
-void move_down(int, int);
-void change_position(void);
-void zero(void);
-
-//Usart functions
-void usart_init(void);
-void usart_send(unsigned char);
-
-//Sensor variables
+//sensor variables
 volatile unsigned long pulse_start;
 volatile unsigned long pulse_end;
 volatile unsigned long pulse_duration;
 volatile int distance;
-unsigned int trial_time;
-int sensorcounter = 0;
-int shotin =0;
-int sensorflag=0;
-int score = 0;
+unsigned int trial_time = 0;
+int counter = 0;
+int sensorflag = 0;
+int shotin=0;
 int attempt = 0;
+int score = 0;
+int result = 0;
+
+
+//sensor functions
+void start_pulse(void);
+void end_pulse(void);
+int detect_ball (void);
+
 
 //Joystick variables
 int voltagey;
@@ -69,193 +55,402 @@ uint16_t adc_resultx;
 int joystickflag;
 int buttonstate = 1;
 
+
+//Joystick functions
+void joystick ();
+uint16_t adc_read(uint8_t);
+
+
 //Motor movement variables
 int target_x,target_y, move_x, move_y;
-int current_x=0;
-int current_y=0;
+int current_x=300;
+int current_y=300;
 
-int main(void) {
-	sei(); // Enable global interrupts
+
+//Motor movement functionss
+void move_left(int, int);
+void move_right(int, int);
+void move_up (int, int);
+void move_down(int, int);
+void zero(void);
+void change_position(void);
+
+
+//Speaker functions, usart communication
+void usart_init(void);
+void usart_send (unsigned char data);
+
+
+int main (void){
+    srand(time(NULL));
+    //usart_init();
     uart_init();
     io_redirect();
-	usart_init();
-	
-	//Button configuration
-  DDRC = 0xF0;
-	PORTC = 0x3F;
+    sei(); // Enable global interrupts
 
-	//Joystick and motion sensor configuration
+    //Joystick and sensor  configuration
     DDRB = 0b00100001;
     PORTB = 0b00110010;
+
+    //Joystick configuration
     ADMUX = (1<<REFS0); //Select vref = avcc
     ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on adc module
-    
 
     //Motor configuration
     DDRD |= (1 << DDD4) | (1 << DDD6); // Set dirPin1 and stepPin1 as output
-	  DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
-	
-	usart_send(1); //"press any button to start the game"
+    DDRD |= (1 << DDD2) | (1 << DDD5); // Set dirPin2 and stepPin2 as output
+
+    //Button configuration
+    DDRC = 0xF0;
+    PORTC = 0x3F;
+
+	usart_send(1); //press any button to start the game"
 	_delay_ms(2000);
-
-	
-	while (1){ //while(read_voltage()>=6.8){
-	
-	//BUTTON 1 IS PRESSED TWICE { 
-	if(score==0){
-		usart_send(4); //" You lost Better luck next time" 
-		_delay_ms(2000);
-	} else{
-		usart_send(5); //"You won, congrats your score is x"
-		_delay_ms(2000);
-	}
-	//} END OF BUTTON 1 PRESSED TWICE
-
-	if (PINC == 0b00111110){
-	usart_send(13); //"You've selected vision single player"
+	usart_send(9); //press button 1 for no vision single player mode
 	_delay_ms(3000);
-	usart_send(7); //"The basketball hoop will now move. You get 3 attempts to score."
-	_delay_ms(4000);
-	usart_send(6);// " Press Button 1 two times when you want to stop playing. Good Luck!" 
-	_delay_ms(4000);
-	change_position();
-	usart_send(44); // "you have 8 seconds to get the ball in"
+	usart_send(10); //press button 2 for no vision multiplayer mode
 	_delay_ms(3000);
-	while (attempt<=2){
-		shotin = detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-			usart_send(2);//"You scored a point"
-			_delay_ms(2000);
-			usart_send(18);//"Current score:"
-			_delay_ms(1000);
-			usart_send(score + 20); //"Number"
-			_delay_ms(1000);
-			attempt=0; 
-			change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
-			usart_send(3); // "try again to shoot"
-			_delay_ms(1000);
-			attempt ++;
-		}
-	}
-	attempt = 0;
-	usart_send(17); // " You have used all your attempts. Press Button 1 if you want to start playing again" 
-	_delay_ms(5000);
-	zero();
-	} 
-
-	if (PINC == 0b00111101){
-	usart_send(14);//"You've selected vision multi player"
+	usart_send(11); //press button 3 for vision single-player mode
 	_delay_ms(3000);
-	usart_send(8);//"Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	_delay_ms(9000);
-	usart_send (6); //" Press Button 1 two times when you want to stop playing. Good Luck!"
-	_delay_ms(4000);
-	joystick();
-	usart_send(44);// "you have 8 seconds to get the ball in"
-	_delay_ms(3000); 
-	while (attempt<=2){
-		shotin =detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-			usart_send(2);//SPEAKER "You scored a point"
-			//_delay_ms()
-			usart_send(18);//"Current score: score points"
-			// _delay_ms()
-			attempt=0; 
-			change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
-			usart_send(3); // "try again to shoot"
-			_delay_ms(1000);
-			attempt ++;
-		}
-	}
-	attempt = 0;
-	}
-	usart_send(41);//"You have used all your attempts. Press Button 2 if you want to start playing again" 
-	_delay_ms(6000);
-	zero();
-	}
-
-
-
-	if (PINC == 0b00111011){
-	usart_send(15); //"You've selected no vision single player"
-	_delay_ms(2000); 
-	usart_send(7); // "The basketball hoop will now move to score"
-	_delay_ms(4000); 
-	usart_send(6); //" Press Button 1 two times when you want to stop playing. Good Luck!"
-	_delay_ms(4000);
-	change_position();
-	usart_send(19);// "beep"
-	_delay_ms(1000); 
-	usart_send (44);//"you have 8 seconds to get the ball in"
+	usart_send(12); //press button 4 for vision multi-player mode
 	_delay_ms(3000);
-	while (attempt<=2){
-		shotin =detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-			usart_send(2);//SPEAKER "You scored a point"
-			//_delay_ms()
-			usart_send(18);//"Current score: score points"
-			// _delay_ms()
-			attempt=0; 
-			change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
-			usart_send(3);// "try again to shoot"
-			_delay_ms(1000);
-			attempt ++;
-		}
-	}
-	attempt = 0;
-	usart_send(42);//" You have used all your attempts. Press Button 3 if you want to start playing again" 
-	_delay_ms(6000);
-	zero();
-	} 
-	if (PINC == 0b00110111){
+ 
+	while (1){
+		if (PINC == 0b00110111){ //First button pressed
+		usart_send(13); //you've selected no vision single player mode
+		_delay_ms(3000);
+		usart_send(54); //press button 1 when you want to stop playing 
+		_delay_ms(---);
+		usart_send(7); //The basketball hoop will now move. You get 3 attempts to score.
+		_delay_ms(3000);
 
-	usart_send(16);//"You've selected no vision multi player"
-	_delay_ms(2000);
-	usart_send(8); // "Use the Joystick to control the movement of the hoop and stop moving the hoop once desired location has been reached. You get 3 attempts to score."
-	_delay_ms(9000);
-	usart_send(6);//" Press Button 1 two times when you want to stop playing. Good Luck!"
-	_delay_ms(4000);
-	joystick();
-	usart_send(19); // "beep" 
-	_delay_ms(1000);
-	usart_send(44); //"you have 8 seconds to get the ball in"
-	_delay_ms(3000);
-	while (attempt<=2){
-		shotin =detect_ball();
-		if (shotin == 1){
-			score++; //Incremement the score when an object is detected
-			usart_send(2);//"You scored a point"
-			//_delay_ms()
-			usart_send(18);//"Current score: score points"
-			// _delay_ms()
-			attempt=0; 
-			change_position();
-		}
-		//_delay_ms()
-		if (shotin == 0){
-			usart_send(3);// "Try again to shoot"
-			_delay_ms(1000);
-			attempt ++;
-		}
-	}
-	attempt = 0;
-	usart_send(43);//" You have used all your attempts. Press Button 4 if you want to start playing again" 
-	_delay_ms(6000);
-	zero();
-	}
+		change_position();
 		
+		usart_send(44); //You have 8 seconds to get the ball in
+		_delay_ms(---);
+		
+		while (attempt<=2){
+				while(result == 0){
+					detect_ball();
+					if(PINC == 0b00110111){ //first button pressed
+						usart_send(18); //Your score is 
+						_delay_ms(1000);
+						usart_send(score+20); //number of points
+						_delay_ms(1000);
+						usart_send(48); //Press button 1 if you want to start playing again, or another button for another mode
+						_delay_ms(---);
+						attempt = 3;
+					}
+				}
+				if (result == 1){
+					score++; //Incremement the score when an object is detected
+					usart_send(2); //You scored a point 
+					_delay_ms(1000);
+					usart_send(18); //Your score is 
+					_delay_ms(1000);
+					usart_send(score+20); //number of points
+					_delay_ms(1000);
+				
+					change_position();
+					attempt=0; 
+					result = 0;
+				}
+				if (result == 2){
+					_delay_ms(5000);
+					usart_send (45); //shoot again
+					_delay_ms(---);
+
+					attempt ++;
+					result = 0;
+				}
+			}
+			attempt = 0;
+			usart_send(46); //You have used all your attempts.
+			_delay_ms(---);
+			usart_send(18); //Your score is 
+			_delay_ms(1000);
+			usart_send(score+20); //number of points
+			_delay_ms(1000);
+			usart_send(48); //Press button 1 if you want to start playing again, or another button for another mode
+			_delay_ms(---);
+			zero();
+		}
+
+		if (PINC == 0b00101111){ //second button pressed
+		usart_send(13); //you've selected no vision multi player mode
+		_delay_ms(3000);
+		usart_send(55); //press button 2 when you want to stop playing 
+		_delay_ms(---);
+		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
+		_delay_ms(---);
+		joystick();
+		
+		usart_send(44); //You have 8 seconds to get the ball in
+		_delay_ms(---);
+		while (attempt<=2){
+			while(result == 0){
+				detect_ball();
+				if(PINC == 0b00101111){
+					usart_send(18); //Your score is 
+					_delay_ms(1000);
+					usart_send(score+20); //number of points
+					_delay_ms(1000);
+					usart_send(49); //Press button 2 if you want to start playing again, or another button for another mode
+					_delay_ms(---);
+					attempt = 3;
+				}
+			}
+			if (result == 1){
+				score++; //Incremement the score when an object is detected
+				usart_send(2); //You scored a point 
+				_delay_ms(1000);
+				usart_send(18); //Your score is 
+				_delay_ms(1000);
+				usart_send(score+20); //Number of points
+				_delay_ms(1000);
+				usart_send(53); //Play again
+				_delay_ms(---);
+				joystick();
+				result = 0;
+			}
+			if (result == 2){
+				usart_send (45); //shoot again
+				_delay_ms(---);
+				attempt ++;
+				result = 0;
+			}
+		}
+			attempt = 0;
+			usart_send(46); //You have used all your attempts.
+			_delay_ms(---);
+			usart_send(18); //Your score is 
+			_delay_ms(1000);
+			usart_send(score+20); //number of points
+			_delay_ms(1000);
+			usart_send(49); //Press button 2 if you want to start playing again, or another button for another mode
+			_delay_ms(---);
+			zero();
+		}
+
+		if (PINC == 0b00011111){ //Third button pressed
+		usart_send(13); //you've selected vision single player mode
+		_delay_ms(3000);
+		usart_send(56); //press button 3 when you want to stop playing 
+		_delay_ms(---);
+		usart_send(7); //The basketball hoop will now move. You get 3 attempts to score.
+		_delay_ms(3000);
+
+		change_position();
+		
+		usart_send(44); //You have 8 seconds to get the ball in
+		_delay_ms(---);
+		
+		while (attempt<=2){
+			while(result == 0){
+				detect_ball();
+				if(PINC == 0b00011111){ //third button pressed
+					usart_send(18); //Your score is 
+					_delay_ms(1000);
+					usart_send(score+20); //number of points
+					_delay_ms(1000);
+					usart_send(50); //Press button 3 if you want to start playing again, or another button for another mode
+					_delay_ms(---);
+					attempt = 3;
+				}
+			}
+			if (result == 1){
+				score++; //Incremement the score when an object is detected
+				usart_send(2); //You scored a point 
+				_delay_ms(1000);
+				usart_send(18); //Your score is 
+				_delay_ms(1000);
+				usart_send(score+20); //number of points
+				_delay_ms(1000);
+			
+				change_position();
+				attempt=0; 
+				result = 0;
+			}
+			if (result == 2){
+				_delay_ms(5000);
+				usart_send (45); //shoot again
+				_delay_ms(---);
+				attempt ++;
+				result = 0;
+			}
+			}
+			attempt = 0;
+			usart_send(46); //You have used all your attempts.
+			_delay_ms(---);
+			usart_send(18); //Your score is 
+			_delay_ms(1000);
+			usart_send(score+20); //number of points
+			_delay_ms(1000);
+			usart_send(50); //Press button 3 if you want to start playing again, or another button for another mode
+			_delay_ms(---);
+			zero();
+		}
+
+		if (PINC == 0b00111011); //fourth button pressed
+		usart_send(13); //you've selected vision multi player mode
+		_delay_ms(3000);
+		usart_send(57); //press button 4 when you want to stop playing 
+		_delay_ms(---);
+		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
+		_delay_ms(---);
+		joystick();
+		
+		usart_send(44); //You have 8 seconds to get the ball in
+		_delay_ms(---);
+		while (attempt<=2){
+			while(result == 0){
+				detect_ball();
+				if(PINC == 0b00111011){
+					usart_send(18); //Your score is 
+					_delay_ms(1000);
+					usart_send(score+20); //number of points
+					_delay_ms(1000);
+					usart_send(51); //Press button 4 if you want to start playing again, or another button for another mode.
+					_delay_ms(---);
+					attempt = 3;
+				}
+			}
+			if (result == 1){
+				score++; //Incremement the score when an object is detected
+				usart_send(2); //You scored a point 
+				_delay_ms(1000);
+				usart_send(18); //Your score is 
+				_delay_ms(1000);
+				usart_send(score+20); //Number of points
+				_delay_ms(1000);
+				usart_send(53); //Play again
+				_delay_ms(---);
+				joystick();
+				result = 0;
+			}
+			if (result == 2){
+				_delay_ms(5000);
+				usart_send (45); //shoot again
+				_delay_ms(---);
+				attempt ++;
+				result = 0;
+			}
+			}
+			attempt = 0;
+			usart_send(46); //You have used all your attempts.
+			_delay_ms(---);
+			usart_send(18); //Your score is 
+			_delay_ms(1000);
+			usart_send(score+20); //number of points
+			_delay_ms(1000);
+			usart_send(51); //Press button 4 if you want to start playing again, or another button for another mode.
+			_delay_ms(---);
+			zero();
+	}
+}
+
+
+void joystick (void){
+    joystickflag = 1;
+    while (joystickflag == 1){
+        adc_resultx = adc_read(JOYSTICK_X); //voltage depends on joystick stage so return voltage read (0-1024mV)
+        voltagex = (adc_resultx);
+        
+        adc_resulty = adc_read(JOYSTICK_Y); //voltage depends on joystick stage so return voltage read
+        voltagey = (adc_resulty);
+
+        if(voltagex >=1000){ //set threshold to start moving
+            move_right(600,200);
+            printf("moveright \n");
+            printf("%d", current_x);
+        }
+        if(voltagex <=50){
+            move_left(600,200);
+            printf("moveleft \n");
+            printf("%d", current_x);
+        }
+        if(voltagey >=1000){
+            move_up(600,200);
+            printf("moveup \n");
+            printf("%d", current_y);
+        }
+        if(voltagey <=50){
+            move_down(600,200);
+            printf("movedown \n");
+            printf("%d", current_y);
+        }
+
+        if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
+            printf("Button pressed \n");
+            joystickflag = 0;
+        }
+    }
+    
+}
+
+
+void move_left(int stepsleft, int delay){
+    PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
+	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+        for (int x = 0; x < stepsleft; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+        }
+    current_x = current_x-stepsleft;
+}
+
+void move_right(int stepsright, int delay){
+	PORTD &= ~(1 << PORTD4); // Set dirPin LOW to change direction of rotation
+	PORTD &= ~(1 << PORTD2);
+        for (int x = 0; x < stepsright; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+		}
+    current_x = current_x+stepsright;
+}
+
+void move_down(int stepsdown, int delay){
+	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
+	PORTD &= ~(1 << PORTD4);
+        for (int x = 0; x < stepsdown; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+        }
+    current_y = current_y-stepsdown;
+}
+
+void move_up(int stepsup, int delay){
+    PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
+	PORTD &= ~(1 << PORTD2);
+        for (int x = 0; x < stepsup; x++) {
+            PORTD |= (1 << PORTD6); // Set stepPin HIGH
+			PORTD |= (1 << PORTD5); // Set stepPin HIGH
+            _delay_us(delay);
+            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
+			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
+            _delay_us(delay);
+        }
+    current_y = current_y+stepsup;
+}
+
+uint16_t adc_read(uint8_t adc_channel){
+  ADMUX &= 0xf0; //clear any previously used channel keeping internal reference
+  ADMUX |= adc_channel; //set the desired channel 
+  ADCSRA |= (1<<ADSC); //start a conversion
+  while ((ADCSRA&(1<<ADSC))); //wait for conversion to complete
+  return ADC; //return result as a 16 bit unsigned int
 }
 
 void start_pulse() {
@@ -286,154 +481,53 @@ int detect_ball (void){
         TCCR1B = 0; // Stop Timer/Counter1
 		trial_time = trial_time + pulse_duration;
 		if (trial_time >= 32000){
-			sensorcounter ++;
+			counter ++;
 			trial_time = 0;
 		}
 
         distance = pulse_duration * 0.017 / 2;// Calculate the distance
         if (distance < 9.5) {
 			sensorflag = 1;
-			return (2); //Number of audio for "You scored a point"
+			result = 1;
         }
 
-        if (distance > 9.5 && sensorcounter>= 120) { //edit counter value for a longer time for shooting 
-            return (3); //Audio for "Try again to shoot" 
-			sensorcounter = 0;
+        if (distance > 9.5 && counter>= 120) { //edit counter value for a longer time for shooting 
+            result = 2;
+			counter = 0;
         }
+        return (result);
     }
-}
-
-uint16_t adc_read(uint8_t adc_channel){
-  ADMUX &= 0xf0; //clear any previously used channel keeping internal reference
-  ADMUX |= adc_channel; //set the desired channel 
-  ADCSRA |= (1<<ADSC); //start a conversion
-  while ((ADCSRA&(1<<ADSC))); //wait for conversion to complete
-  return ADC; //return result as a 16 bit unsigned int
-}
-void move_left(int steps, int delay){
-	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
-	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
-        for (int x = 0; x < steps; x++) {
-            PORTD |= (1 << PORTD6); // Set stepPin HIGH
-			PORTD |= (1 << PORTD5); // Set stepPin HIGH
-            _delay_us(delay);
-            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
-			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
-            _delay_us(delay);
-			}
-}
-void move_right(int steps, int delay){
-	PORTD &= ~(1 << PORTD4); // Set dirPin LOW to change direction of rotation
-	PORTD &= ~(1 << PORTD2);
-        for (int x = 0; x < steps; x++) {
-            PORTD |= (1 << PORTD6); // Set stepPin HIGH
-			PORTD |= (1 << PORTD5); // Set stepPin HIGH
-            _delay_us(delay);
-            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
-			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
-            _delay_us(delay);
-        }
-}
-
-void move_up(int steps, int delay){
-	PORTD |= (1 << PORTD4); // Set dirPin HIGH to move in a particular direction
-	PORTD &= ~(1 << PORTD2);
-        for (int x = 0; x < steps; x++) {
-            PORTD |= (1 << PORTD6); // Set stepPin HIGH
-			PORTD |= (1 << PORTD5); // Set stepPin HIGH
-            _delay_us(delay);
-            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
-			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
-            _delay_us(delay);
-        }
-}
-
-void move_down(int steps, int delay){
-	PORTD |= (1 << PORTD2); // Set dirPin HIGH to move in a particular direction
-	PORTD &= ~(1 << PORTD4);
-        for (int x = 0; x < steps; x++) {
-            PORTD |= (1 << PORTD6); // Set stepPin HIGH
-			PORTD |= (1 << PORTD5); // Set stepPin HIGH
-            _delay_us(delay);
-            PORTD &= ~(1 << PORTD6); // Set stepPin LOW
-			PORTD &= ~(1 << PORTD5); // Set stepPin LOW
-            _delay_us(delay);
-        }
-}
-void joystick (void){
-    joystickflag = 1;
-    while (joystickflag == 1){
-        adc_resultx = adc_read(JOYSTICK_X); //voltage depends on joystick stage so return voltage read (0-1024mV)
-        voltagex = (adc_resultx);
-        
-        adc_resulty = adc_read(JOYSTICK_Y); //voltage depends on joystick stage so return voltage read
-        voltagey = (adc_resulty);
-
-        if(voltagex >=1000){ //set threshold to start moving
-            move_right(100,500);
-            printf("moveright \n");
-        }
-        if(voltagex <=50){
-            move_left(100,500);
-            printf("moveleft \n");
-        }
-        if(voltagey >=1000){
-            move_up(100,500);
-            printf("moveup \n");
-        }
-        if(voltagey <=50){
-            move_down(100,500);
-            printf("movedown \n");
-        }
-
-        if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
-            printf("Button pressed \n");
-            joystickflag = 0;
-        }
-    }
-    
 }
 
 void change_position(void){
-	srand(time(0));
-    target_x = rand() % 5000+50;
-    target_y = rand() % 5000+50;
-    
-	move_x = target_x - current_x;
-	move_y = target_y - current_y;
-
-	if (move_x>0){
-		move_right(move_x, 400);
+    target_y = rand() % 15900+500;
+    target_x = rand() % 16200+500;
+    move_y = target_y - current_y;
+    move_x = target_x - current_x;
+    if (move_y<0)
+    {   
+        move_y = move_y*(-1);
+        move_down(move_y, 200);
+    }
+	else if (move_y>0){
+		move_up(move_y, 200);
 	}
-	if (move_x<0){
-		move_left(move_x, 400);
-	}
-	if (move_y>0){
-		move_right(move_y, 400);
-	}
-	if (move_y<0){
-		move_left(move_y, 400);
+	if (move_x<0)
+    {
+        move_x = move_x*(-1);
+        move_left(move_x, 200);
+    }
+	else if (move_x>0){
+		move_right(move_x, 200);
 	}
 }
 
-//Using max steps 15900,16200
 void zero(void){
-	move_x = 300 - current_x;
-	move_y = 300 - current_y;
+	move_x = current_x-300;
+	move_y = current_y -300;
 
-	if (move_x>0){
-		move_right(move_x, 400);
-		
-	}
-	if (move_x<0){
-		move_left(move_x, 400);
-	}
-	if (move_y>0){
-		move_right(move_y, 400);
-	}
-	if (move_y<0){
-		move_left(move_y, 400);
-	}
+	move_left(move_x, 200);
+    move_down(move_y, 200);
 }
 
 void usart_init(void){
