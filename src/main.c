@@ -125,6 +125,8 @@ int main (void){
 		_delay_ms(3000);
 
 		change_position();
+		usart_send(58); //beep
+		_delay_ms(---);
 		
 		usart_send(44); //You have 8 seconds to get the ball in
 		_delay_ms(---);
@@ -152,12 +154,16 @@ int main (void){
 					_delay_ms(1000);
 				
 					change_position();
+					usart_send(58); //beep
+					_delay_ms(---);
 					attempt=0; 
 					result = 0;
 				}
 				if (result == 2){
 					_delay_ms(5000);
 					usart_send (45); //shoot again
+					_delay_ms(---);
+					usart_send(58); //beep
 					_delay_ms(---);
 
 					attempt ++;
@@ -184,6 +190,8 @@ int main (void){
 		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
 		_delay_ms(---);
 		joystick();
+		usart_send(58); //beep
+		_delay_ms(---);
 		
 		usart_send(44); //You have 8 seconds to get the ball in
 		_delay_ms(---);
@@ -201,7 +209,7 @@ int main (void){
 				}
 			}
 			if (result == 1){
-				score++; //Incremement the score when an object is detected
+				score++; //Increment the score when an object is detected
 				usart_send(2); //You scored a point 
 				_delay_ms(1000);
 				usart_send(18); //Your score is 
@@ -211,10 +219,14 @@ int main (void){
 				usart_send(53); //Play again
 				_delay_ms(---);
 				joystick();
+				usart_send(58); //beep
+				_delay_ms(---);
 				result = 0;
 			}
 			if (result == 2){
 				usart_send (45); //shoot again
+				_delay_ms(---);
+				usart_send(58); //beep
 				_delay_ms(---);
 				attempt ++;
 				result = 0;
