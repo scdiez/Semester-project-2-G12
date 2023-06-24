@@ -22,8 +22,8 @@
 
 
 //Joystick connections
-#define JOYSTICK_Y 0 //ADC channels we'll use A0
-#define JOYSTICK_X 1 //A1
+#define JOYSTICK_Y 0 //A0 for y movement
+#define JOYSTICK_X 1 //A1 for x movement
 #define JOYSTICK_SW 12 //Joystick button D12
 
 
@@ -82,10 +82,10 @@ void usart_send (unsigned char data);
 
 
 int main (void){
-    srand(time(NULL));
-    //usart_init();
-    uart_init();
-    io_redirect();
+    srand(time(NULL)); //initializing for random numbers
+    usart_init(); //usart communication
+    //uart_init();
+    //io_redirect();
     sei(); // Enable global interrupts
 
     //Joystick and sensor  configuration
@@ -131,20 +131,18 @@ int main (void){
 		usart_send(44); //You have 8 seconds to get the ball in
 		_delay_ms(---);
 		
-		while (attempt<=2){
-				while(result == 0){
-					detect_ball();
-					if(PINC == 0b00110111){ //first button pressed
-						usart_send(18); //Your score is 
-						_delay_ms(1000);
-						usart_send(score+20); //number of points
-						_delay_ms(1000);
-						usart_send(48); //Press button 1 if you want to start playing again, or another button for another mode
-						_delay_ms(---);
-						attempt = 3;
-					}
+		while (attempt<=2){ //up to three failed attempts
+				detect_ball(); 
+				if(PINC == 0b00110111){ //first button pressed
+					usart_send(18); //Your score is 
+					_delay_ms(1000);
+					usart_send(score+20); //number of points
+					_delay_ms(1000);
+					usart_send(48); //Press button 1 if you want to start playing again, or another button for another mode
+					_delay_ms(---);
+					attempt = 3;
 				}
-				if (result == 1){
+				if (result == 1){ //ball went in
 					score++; //Incremement the score when an object is detected
 					usart_send(2); //You scored a point 
 					_delay_ms(1000);
@@ -153,13 +151,13 @@ int main (void){
 					usart_send(score+20); //number of points
 					_delay_ms(1000);
 				
-					change_position();
+					change_position(); //the user will play again
 					usart_send(58); //beep
 					_delay_ms(---);
-					attempt=0; 
+					attempt=0; //attempts are restarted
 					result = 0;
 				}
-				if (result == 2){
+				if (result == 2){ //ball didn't go in
 					_delay_ms(5000);
 					usart_send (45); //shoot again
 					_delay_ms(---);
@@ -189,24 +187,25 @@ int main (void){
 		_delay_ms(---);
 		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
 		_delay_ms(---);
+
 		joystick();
+
 		usart_send(58); //beep
 		_delay_ms(---);
 		
 		usart_send(44); //You have 8 seconds to get the ball in
 		_delay_ms(---);
+
 		while (attempt<=2){
-			while(result == 0){
-				detect_ball();
-				if(PINC == 0b00101111){
-					usart_send(18); //Your score is 
-					_delay_ms(1000);
-					usart_send(score+20); //number of points
-					_delay_ms(1000);
-					usart_send(49); //Press button 2 if you want to start playing again, or another button for another mode
-					_delay_ms(---);
-					attempt = 3;
-				}
+			detect_ball();
+			if(PINC == 0b00101111){
+				usart_send(18); //Your score is 
+				_delay_ms(1000);
+				usart_send(score+20); //number of points
+				_delay_ms(1000);
+				usart_send(49); //Press button 2 if you want to start playing again, or another button for another mode
+				_delay_ms(---);
+				attempt = 3;
 			}
 			if (result == 1){
 				score++; //Increment the score when an object is detected
@@ -218,7 +217,9 @@ int main (void){
 				_delay_ms(1000);
 				usart_send(53); //Play again
 				_delay_ms(---);
+
 				joystick();
+
 				usart_send(58); //beep
 				_delay_ms(---);
 				result = 0;
@@ -231,7 +232,7 @@ int main (void){
 				attempt ++;
 				result = 0;
 			}
-		}
+			}
 			attempt = 0;
 			usart_send(46); //You have used all your attempts.
 			_delay_ms(---);
@@ -258,18 +259,17 @@ int main (void){
 		_delay_ms(---);
 		
 		while (attempt<=2){
-			while(result == 0){
-				detect_ball();
-				if(PINC == 0b00011111){ //third button pressed
-					usart_send(18); //Your score is 
-					_delay_ms(1000);
-					usart_send(score+20); //number of points
-					_delay_ms(1000);
-					usart_send(50); //Press button 3 if you want to start playing again, or another button for another mode
-					_delay_ms(---);
-					attempt = 3;
-				}
+			detect_ball();
+			if(PINC == 0b00011111){ //third button pressed
+				usart_send(18); //Your score is 
+				_delay_ms(1000);
+				usart_send(score+20); //number of points
+				_delay_ms(1000);
+				usart_send(50); //Press button 3 if you want to start playing again, or another button for another mode
+				_delay_ms(---);
+				attempt = 3;
 			}
+			
 			if (result == 1){
 				score++; //Incremement the score when an object is detected
 				usart_send(2); //You scored a point 
@@ -280,6 +280,7 @@ int main (void){
 				_delay_ms(1000);
 			
 				change_position();
+				
 				attempt=0; 
 				result = 0;
 			}
@@ -315,18 +316,17 @@ int main (void){
 		usart_send(44); //You have 8 seconds to get the ball in
 		_delay_ms(---);
 		while (attempt<=2){
-			while(result == 0){
-				detect_ball();
-				if(PINC == 0b00111011){
-					usart_send(18); //Your score is 
-					_delay_ms(1000);
-					usart_send(score+20); //number of points
-					_delay_ms(1000);
-					usart_send(51); //Press button 4 if you want to start playing again, or another button for another mode.
-					_delay_ms(---);
-					attempt = 3;
-				}
+			detect_ball();
+			if(PINC == 0b00111011){
+				usart_send(18); //Your score is 
+				_delay_ms(1000);
+				usart_send(score+20); //number of points
+				_delay_ms(1000);
+				usart_send(51); //Press button 4 if you want to start playing again, or another button for another mode.
+				_delay_ms(---);
+				attempt = 3;
 			}
+			
 			if (result == 1){
 				score++; //Incremement the score when an object is detected
 				usart_send(2); //You scored a point 
@@ -476,7 +476,7 @@ void end_pulse() {
 
 int detect_ball (void){
 	sensorflag = 0;
-    while (sensorflag == 0) {
+    while (sensorflag == 0) { //loop runs while two outcomes aren't met
         // Clears the trigPin
         PORTB &= ~(1 << PORTB0);
         _delay_us(2);
@@ -493,22 +493,23 @@ int detect_ball (void){
         TCCR1B = 0; // Stop Timer/Counter1
 		trial_time = trial_time + pulse_duration;
 		if (trial_time >= 32000){
-			counter ++;
+			counter ++; //increase range of timer
 			trial_time = 0;
 		}
 
         distance = pulse_duration * 0.017 / 2;// Calculate the distance
-        if (distance < 9.5) {
-			sensorflag = 1;
+        if (distance < 9.5) { //ball went in
+			sensorflag = 1; 
 			result = 1;
         }
 
-        if (distance > 9.5 && counter>= 120) { //edit counter value for a longer time for shooting 
-            result = 2;
+        if (distance > 9.5 && counter>= 120) { //edit counter max value for a longer time for shooting 
+            result = 2; //time has run out anad ball hasn't gone in 
 			counter = 0;
+			sensorflag = 1;
         }
-        return (result);
     }
+	return (result);
 }
 
 void change_position(void){
