@@ -67,7 +67,7 @@ int current_x=300;
 int current_y=300;
 
 
-//Motor movement functionss
+//Motor movement functions
 void move_left(int, int);
 void move_right(int, int);
 void move_up (int, int);
@@ -89,8 +89,9 @@ int main (void){
     sei(); // Enable global interrupts
 
     //Joystick and sensor  configuration
-    DDRB = 0b00100001;
-    PORTB = 0b00110010;
+    DDRB = 0b00000001; //trig pin (B0) output, echo pin input, joystick button (B4) input
+    PORTB = 0b00010010; //pullup on joystick button and echo pin
+
 
     //Joystick configuration
     ADMUX = (1<<REFS0); //Select vref = avcc
@@ -373,23 +374,15 @@ void joystick (void){
 
         if(voltagex >=1000){ //set threshold to start moving
             move_right(600,200);
-            printf("moveright \n");
-            printf("%d", current_x);
         }
         if(voltagex <=50){
             move_left(600,200);
-            printf("moveleft \n");
-            printf("%d", current_x);
         }
         if(voltagey >=1000){
             move_up(600,200);
-            printf("moveup \n");
-            printf("%d", current_y);
         }
         if(voltagey <=50){
             move_down(600,200);
-            printf("movedown \n");
-            printf("%d", current_y);
         }
 
         if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
@@ -513,8 +506,8 @@ int detect_ball (void){
 }
 
 void change_position(void){
-    target_y = rand() % 15900+500;
-    target_x = rand() % 16200+500;
+    target_y = rand() % 15900+300;
+    target_x = rand() % 16200+300;
     move_y = target_y - current_y;
     move_x = target_x - current_x;
     if (move_y<0)
