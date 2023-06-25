@@ -83,9 +83,8 @@ void usart_send (unsigned char data);
 
 int main (void){
     srand(time(NULL)); //initializing for random numbers
-    usart_init(); //usart communication
-    //uart_init();
-    //io_redirect();
+    uart_init();
+    io_redirect();
     sei(); // Enable global interrupts
 
     //Joystick and sensor  configuration
@@ -104,34 +103,22 @@ int main (void){
     //Button configuration
     DDRC = 0xF0;
     PORTC = 0x3F;
-
-	usart_send(1); //press any button to start the game"
-	_delay_ms(2000);
-	usart_send(9); //press button 1 for no vision single player mode
-	_delay_ms(3000);
-	usart_send(10); //press button 2 for no vision multiplayer mode
-	_delay_ms(3000);
-	usart_send(11); //press button 3 for vision single-player mode
-	_delay_ms(3000);
-	usart_send(12); //press button 4 for vision multi-player mode
-	_delay_ms(3000);
+	printf("Press any button to start the game \n");
+	printf("Press button 1 for no vision single player mode \n");
+	printf("Press button 2 for no vision multiplayer mode \n");
+	printf("Press button 3 for no vision multiplayer mode \n");
+	printf("Press button 4 for no vision multiplayer mode \n");
  
 	while (1){
 		if (PINC == 0b00110111){ //First button pressed
-		usart_send(13); //you've selected no vision single player mode
-		_delay_ms(3000);
-		usart_send(54); //press button 1 when you want to stop playing 
-		_delay_ms(---);
-		usart_send(7); //The basketball hoop will now move. You get 3 attempts to score.
-		_delay_ms(3000);
+		printf("You've selected no vision single player mode \n");
+		printf("Press button 1 when you want to stop playing  \n");
+		printf("The basketball hoop will now move. You get 3 attempts to score. \n");
 
 		change_position();
 
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
-
-		usart_send(58); //beep
-		_delay_ms(---);
+		printf("You have 8 seconds to get the ball in \n");
+		printf("Beep \n");
 		
 		while (attempt<=2){ //up to three failed attempts
 				detect_ball(); 
@@ -140,57 +127,42 @@ int main (void){
 				}
 				if (result == 1){ //ball went in
 					score++; //Incremement the score when an object is detected
-					usart_send(2); //You scored a point 
-					_delay_ms(1000);
-					usart_send(18); //Your score is 
-					_delay_ms(1000);
-					usart_send(score+20); //number of points
-					_delay_ms(1000);
+					printf("You scored a point  \n");
+					printf("Your score is: ");
+					printf("%d \n", score);
 				
 					change_position(); //the user will play again
-					usart_send(58); //beep
-					_delay_ms(---);
+			
+					printf("Beep \n");
 					attempt=0; //attempts are restarted
 					result = 0;
 				}
 				if (result == 2){ //ball didn't go in
 					_delay_ms(5000);
-					usart_send (45); //shoot again
-					_delay_ms(---);
-					usart_send(58); //beep
-					_delay_ms(---);
+					printf("Shoot again \n");
+					printf("Beep \n");
 
 					attempt ++;
 					result = 0;
 				}
 			}
 			attempt = 0;
-			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
-			usart_send(18); //Your score is 
-			_delay_ms(1000);
-			usart_send(score+20); //number of points
-			_delay_ms(1000);
-			usart_send(48); //Press button 1 if you want to start playing again, or another button for another mode
-			_delay_ms(---);
+			printf("You have used all your attempts. \n");
+			printf("Your score is: ");
+			printf("%d \n", score);
+			printf("Press button 1 if you want to start playing again, or another button for another mod \n");
 			zero();
 		}
 
 		if (PINC == 0b00101111){ //second button pressed
-		usart_send(13); //you've selected no vision multi player mode
-		_delay_ms(3000);
-		usart_send(55); //press button 2 when you want to stop playing 
-		_delay_ms(---);
-		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
-		_delay_ms(---);
+		printf("You've selected no vision multi player mode \n");
+		printf("Press button 2 when you want to stop playing  \n");
+		printf("Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score. \n");
 
 		joystick();
 
-		usart_send(58); //beep
-		_delay_ms(---);
-		
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
+		printf("Beep\n");
+		printf("You have 8 seconds to get the ball in \n");
 
 		while (attempt<=2){
 			detect_ball();
@@ -199,54 +171,39 @@ int main (void){
 			}
 			if (result == 1){
 				score++; //Increment the score when an object is detected
-				usart_send(2); //You scored a point 
-				_delay_ms(1000);
-				usart_send(18); //Your score is 
-				_delay_ms(1000);
-				usart_send(score+20); //Number of points
-				_delay_ms(1000);
-				usart_send(53); //Play again
-				_delay_ms(---);
+				printf("You scored a point \n");
+				printf("Your score is: ");
+				printf("%d \n", score);
+				printf("Play again \n");
 
 				joystick();
 
-				usart_send(58); //beep
-				_delay_ms(---);
+				printf("Beep \n");
 				result = 0;
 			}
 			if (result == 2){
-				usart_send (45); //shoot again
-				_delay_ms(---);
-				usart_send(58); //beep
-				_delay_ms(---);
+				printf("Shoot again \n");
+				printf("Beep \n");
 				attempt ++;
 				result = 0;
 			}
 			}
 			attempt = 0;
-			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
-			usart_send(18); //Your score is 
-			_delay_ms(1000);
-			usart_send(score+20); //number of points
-			_delay_ms(1000);
-			usart_send(49); //Press button 2 if you want to start playing again, or another button for another mode
-			_delay_ms(---);
+			printf("You have used all your attempts. \n");
+			printf("Your score is: ");
+			printf("%d \n", score);
+			printf("Press button 2 if you want to start playing again, or another button for another mode \n");
 			zero();
 		}
 
 		if (PINC == 0b00011111){ //Third button pressed
-		usart_send(13); //you've selected vision single player mode
-		_delay_ms(3000);
-		usart_send(56); //press button 3 when you want to stop playing 
-		_delay_ms(---);
-		usart_send(7); //The basketball hoop will now move. You get 3 attempts to score.
-		_delay_ms(3000);
+		printf("You've selected vision single player mode \n");
+		printf("Press button 3 when you want to stop playing\n");
+		printf("The basketball hoop will now move. You get 3 attempts to score. \n");
 
 		change_position();
 		
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
+		printf("You have 8 seconds to get the ball in \n");
 		
 		while (attempt<=2){
 			detect_ball();
@@ -256,12 +213,9 @@ int main (void){
 			
 			if (result == 1){
 				score++; //Incremement the score when an object is detected
-				usart_send(2); //You scored a point 
-				_delay_ms(1000);
-				usart_send(18); //Your score is 
-				_delay_ms(1000);
-				usart_send(score+20); //number of points
-				_delay_ms(1000);
+				printf("You scored a point  \n");
+				printf("Your score is: ");
+				printf("%d \n", score);
 			
 				change_position();
 				
@@ -270,35 +224,26 @@ int main (void){
 			}
 			if (result == 2){
 				_delay_ms(5000);
-				usart_send (45); //shoot again
-				_delay_ms(---);
+				printf("Shoot again \n");
 				attempt ++;
 				result = 0;
 			}
 			}
 			attempt = 0;
-			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
-			usart_send(18); //Your score is 
-			_delay_ms(1000);
-			usart_send(score+20); //number of points
-			_delay_ms(1000);
-			usart_send(50); //Press button 3 if you want to start playing again, or another button for another mode
-			_delay_ms(---);
+			printf("You have used all your attempts. \n");
+			printf("Your score is: ");
+			printf("%d \n", score);
+			printf("Press button 3 if you want to start playing again, or another button for another mode \n");
 			zero();
 		}
 
 		if (PINC == 0b00111011); //fourth button pressed
-		usart_send(13); //you've selected vision multi player mode
-		_delay_ms(3000);
-		usart_send(57); //press button 4 when you want to stop playing 
-		_delay_ms(---);
-		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
-		_delay_ms(---);
+		printf("You've selected vision multi player mode \n");
+		printf("Press button 4 when you want to stop playin \n");
+		printf("Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score. \n");
 		joystick();
-		
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
+	
+		printf("You have 8 seconds to get the ball in \n");
 		while (attempt<=2){
 			detect_ball();
 			if(PINC == 0b00111011){
@@ -307,34 +252,25 @@ int main (void){
 			
 			if (result == 1){
 				score++; //Incremement the score when an object is detected
-				usart_send(2); //You scored a point 
-				_delay_ms(1000);
-				usart_send(18); //Your score is 
-				_delay_ms(1000);
-				usart_send(score+20); //Number of points
-				_delay_ms(1000);
-				usart_send(53); //Play again
-				_delay_ms(---);
+				printf("You scored a point \n");
+				printf("Your score is: ");
+				printf("%d \n", score);
+				printf("Play again \n");
 				joystick();
 				result = 0;
 			}
 			if (result == 2){
 				_delay_ms(5000);
-				usart_send (45); //shoot again
-				_delay_ms(---);
+				printf("Shoot again \n");
 				attempt ++;
 				result = 0;
 			}
 			}
 			attempt = 0;
-			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
-			usart_send(18); //Your score is 
-			_delay_ms(1000);
-			usart_send(score+20); //number of points
-			_delay_ms(1000);
-			usart_send(51); //Press button 4 if you want to start playing again, or another button for another mode.
-			_delay_ms(---);
+			printf("You have used all your attempts. \n");
+			printf("Your score is: ");
+			printf("%d \n", score);
+			printf("Press button 4 if you want to start playing again, or another button for another mode. \n");
 			zero();
 	}
 }
