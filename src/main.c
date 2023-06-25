@@ -126,21 +126,16 @@ int main (void){
 		_delay_ms(3000);
 
 		change_position();
-		usart_send(58); //beep
-		_delay_ms(---);
-		
+
 		usart_send(44); //You have 8 seconds to get the ball in
+		_delay_ms(---);
+
+		usart_send(58); //beep
 		_delay_ms(---);
 		
 		while (attempt<=2){ //up to three failed attempts
 				detect_ball(); 
 				if(PINC == 0b00110111){ //first button pressed
-					usart_send(18); //Your score is 
-					_delay_ms(1000);
-					usart_send(score+20); //number of points
-					_delay_ms(1000);
-					usart_send(48); //Press button 1 if you want to start playing again, or another button for another mode
-					_delay_ms(---);
 					attempt = 3;
 				}
 				if (result == 1){ //ball went in
@@ -200,12 +195,6 @@ int main (void){
 		while (attempt<=2){
 			detect_ball();
 			if(PINC == 0b00101111){
-				usart_send(18); //Your score is 
-				_delay_ms(1000);
-				usart_send(score+20); //number of points
-				_delay_ms(1000);
-				usart_send(49); //Press button 2 if you want to start playing again, or another button for another mode
-				_delay_ms(---);
 				attempt = 3;
 			}
 			if (result == 1){
@@ -262,12 +251,6 @@ int main (void){
 		while (attempt<=2){
 			detect_ball();
 			if(PINC == 0b00011111){ //third button pressed
-				usart_send(18); //Your score is 
-				_delay_ms(1000);
-				usart_send(score+20); //number of points
-				_delay_ms(1000);
-				usart_send(50); //Press button 3 if you want to start playing again, or another button for another mode
-				_delay_ms(---);
 				attempt = 3;
 			}
 			
@@ -319,12 +302,6 @@ int main (void){
 		while (attempt<=2){
 			detect_ball();
 			if(PINC == 0b00111011){
-				usart_send(18); //Your score is 
-				_delay_ms(1000);
-				usart_send(score+20); //number of points
-				_delay_ms(1000);
-				usart_send(51); //Press button 4 if you want to start playing again, or another button for another mode.
-				_delay_ms(---);
 				attempt = 3;
 			}
 			
