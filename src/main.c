@@ -137,7 +137,7 @@ int main (void){
         zero();
     }
 
-    if (PINC == 0b00101111){
+    if (PINC == 0b00101111){//Second button pressed
       printf("You've selected vision multiplayer \n");
       printf("Move the basket with the joystick.Press the button to fix the position. You get 3 attempts to score. \n");
       printf("Press Button 2 if you want to stop playing. Good Luck! \n");
@@ -172,11 +172,11 @@ int main (void){
         zero();
     }
 
-    if (PINC == 0b00011111){
+    if (PINC == 0b00011111){ //Third button pressed
       printf("Third button pressed");
       joystick();
     }
-    if (PINC == 0b00111011){
+    if (PINC == 0b00111011){//Fourth button pressed
       printf("Fourth button pressed");
       zero();
     }
