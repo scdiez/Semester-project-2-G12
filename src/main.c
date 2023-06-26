@@ -120,18 +120,18 @@ int main (void){
 		if (PINC == 0b00110111){ //First button pressed
 		usart_send(13); //you've selected no vision single player mode
 		_delay_ms(3000);
-		usart_send(54); //press button 1 when you want to stop playing 
-		_delay_ms(---);
+		usart_send(53); //press button 1 when you want to stop playing 
+		_delay_ms(3000);
 		usart_send(7); //The basketball hoop will now move. You get 3 attempts to score.
 		_delay_ms(3000);
 
 		change_position();
 
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
+		usart_send(45); //You have 8 seconds to get the ball in
+		_delay_ms(3000);
 
-		usart_send(58); //beep
-		_delay_ms(---);
+		usart_send(57); //beep
+		_delay_ms(1000);
 		
 		while (attempt<=2){ //up to three failed attempts
 				detect_ball(); 
@@ -148,17 +148,17 @@ int main (void){
 					_delay_ms(1000);
 				
 					change_position(); //the user will play again
-					usart_send(58); //beep
-					_delay_ms(---);
+					usart_send(57); //beep
+					_delay_ms(1000);
 					attempt=0; //attempts are restarted
 					result = 0;
 				}
 				if (result == 2){ //ball didn't go in
 					_delay_ms(5000);
-					usart_send (45); //shoot again
-					_delay_ms(---);
-					usart_send(58); //beep
-					_delay_ms(---);
+					usart_send (3); //try to shoot again
+					_delay_ms(2000);
+					usart_send(57); //beep
+					_delay_ms(1000);
 
 					attempt ++;
 					result = 0;
@@ -166,13 +166,13 @@ int main (void){
 			}
 			attempt = 0;
 			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
+			_delay_ms(2000);
 			usart_send(18); //Your score is 
 			_delay_ms(1000);
 			usart_send(score+20); //number of points
 			_delay_ms(1000);
 			usart_send(48); //Press button 1 if you want to start playing again, or another button for another mode
-			_delay_ms(---);
+			_delay_ms(6000);
 			zero();
 		}
 
@@ -180,17 +180,17 @@ int main (void){
 		usart_send(13); //you've selected no vision multi player mode
 		_delay_ms(3000);
 		usart_send(55); //press button 2 when you want to stop playing 
-		_delay_ms(---);
+		_delay_ms(3000);
 		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
-		_delay_ms(---);
+		_delay_ms(7000);
 
 		joystick();
 
-		usart_send(58); //beep
-		_delay_ms(---);
+		usart_send(57); //beep
+		_delay_ms(1000);
 		
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
+		usart_send(45); //You have 8 seconds to get the ball in
+		_delay_ms(3000);
 
 		while (attempt<=2){
 			detect_ball();
@@ -205,48 +205,48 @@ int main (void){
 				_delay_ms(1000);
 				usart_send(score+20); //Number of points
 				_delay_ms(1000);
-				usart_send(53); //Play again
-				_delay_ms(---);
+				usart_send(52); //Play again
+				_delay_ms(2000);
 
 				joystick();
 
-				usart_send(58); //beep
-				_delay_ms(---);
+				usart_send(57); //beep
+				_delay_ms(1000);
 				result = 0;
 			}
 			if (result == 2){
-				usart_send (45); //shoot again
-				_delay_ms(---);
-				usart_send(58); //beep
-				_delay_ms(---);
+				usart_send (3); //try to shoot again
+				_delay_ms(2000);
+				usart_send(57); //beep
+				_delay_ms(1000);
 				attempt ++;
 				result = 0;
 			}
 			}
 			attempt = 0;
 			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
+			_delay_ms(2000);
 			usart_send(18); //Your score is 
 			_delay_ms(1000);
 			usart_send(score+20); //number of points
 			_delay_ms(1000);
 			usart_send(49); //Press button 2 if you want to start playing again, or another button for another mode
-			_delay_ms(---);
+			_delay_ms(6000);
 			zero();
 		}
 
 		if (PINC == 0b00011111){ //Third button pressed
 		usart_send(13); //you've selected vision single player mode
 		_delay_ms(3000);
-		usart_send(56); //press button 3 when you want to stop playing 
-		_delay_ms(---);
+		usart_send(55); //press button 3 when you want to stop playing 
+		_delay_ms(3000);
 		usart_send(7); //The basketball hoop will now move. You get 3 attempts to score.
 		_delay_ms(3000);
 
 		change_position();
 		
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
+		usart_send(45); //You have 8 seconds to get the ball in
+		_delay_ms(3000);
 		
 		while (attempt<=2){
 			detect_ball();
@@ -270,35 +270,35 @@ int main (void){
 			}
 			if (result == 2){
 				_delay_ms(5000);
-				usart_send (45); //shoot again
-				_delay_ms(---);
+				usart_send (3); //try to shoot again
+				_delay_ms(2000);
 				attempt ++;
 				result = 0;
 			}
 			}
 			attempt = 0;
 			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
+			_delay_ms(2000);
 			usart_send(18); //Your score is 
 			_delay_ms(1000);
 			usart_send(score+20); //number of points
 			_delay_ms(1000);
 			usart_send(50); //Press button 3 if you want to start playing again, or another button for another mode
-			_delay_ms(---);
+			_delay_ms(6000);
 			zero();
 		}
 
 		if (PINC == 0b00111011); //fourth button pressed
 		usart_send(13); //you've selected vision multi player mode
 		_delay_ms(3000);
-		usart_send(57); //press button 4 when you want to stop playing 
-		_delay_ms(---);
+		usart_send(56); //press button 4 when you want to stop playing 
+		_delay_ms(3000);
 		usart_send(47); //Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score.
-		_delay_ms(---);
+		_delay_ms(7000);
 		joystick();
 		
-		usart_send(44); //You have 8 seconds to get the ball in
-		_delay_ms(---);
+		usart_send(45); //You have 8 seconds to get the ball in
+		_delay_ms(3000);
 		while (attempt<=2){
 			detect_ball();
 			if(PINC == 0b00111011){
@@ -313,28 +313,28 @@ int main (void){
 				_delay_ms(1000);
 				usart_send(score+20); //Number of points
 				_delay_ms(1000);
-				usart_send(53); //Play again
-				_delay_ms(---);
+				usart_send(52); //Play again
+				_delay_ms(2000);
 				joystick();
 				result = 0;
 			}
 			if (result == 2){
 				_delay_ms(5000);
-				usart_send (45); //shoot again
-				_delay_ms(---);
+				usart_send (3); //try to shoot again
+				_delay_ms(2000);
 				attempt ++;
 				result = 0;
 			}
 			}
 			attempt = 0;
 			usart_send(46); //You have used all your attempts.
-			_delay_ms(---);
+			_delay_ms(2000);
 			usart_send(18); //Your score is 
 			_delay_ms(1000);
 			usart_send(score+20); //number of points
 			_delay_ms(1000);
 			usart_send(51); //Press button 4 if you want to start playing again, or another button for another mode.
-			_delay_ms(---);
+			_delay_ms(6000);
 			zero();
 	}
 }
