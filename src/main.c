@@ -106,8 +106,8 @@ int main (void){
 	printf("Press any button to start the game \n");
 	printf("Press button 1 for no vision single player mode \n");
 	printf("Press button 2 for no vision multiplayer mode \n");
-	printf("Press button 3 for no vision multiplayer mode \n");
-	printf("Press button 4 for no vision multiplayer mode \n");
+	printf("Press button 3 for vision single player mode \n");
+	printf("Press button 4 for vision multiplayer mode \n");
  
 	while (1){
 		if (PINC == 0b00110111){ //First button pressed
