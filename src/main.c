@@ -126,28 +126,26 @@ int main (void){
             result = 0;
         }
 		if (result == 2){
-            _delay_ms(5000);
 			printf("Shoot now \n");
 			attempt ++;
             result = 0;
 		}
 	    }
         attempt = 0;
-        printf("You have used all your attempts. Your score is %d. Press button 1 if you want to start playing again, or another button for other mode \n", score);
+        printf("You have used all your attempts. Press Button 1 if you want to start playing again");
         zero();
     }
-
-    if (PINC == 0b00101111){//Second button pressed
-      printf("You've selected vision multiplayer \n");
-      printf("Move the basket with the joystick.Press the button to fix the position. You get 3 attempts to score. \n");
-      printf("Press Button 2 if you want to stop playing. Good Luck! \n");
+	if (PINC == 0b00101111){ //Second button pressed
+      printf("You've selected vision single player \n");
+      printf("The basketball hoop will now move. You get 3 attempts to score. \n");
+      printf("Press Button 1 if you want to stop playing. Good Luck! \n");
       joystick();
       
-      printf("You have 8 seconds to get the ball in \n");
+      printf("You have 3 seconds to get the ball in \n");
       while (attempt<=2){
 		while(result == 0){
             detect_ball();
-            if(PINC == 0b00110111){
+            if(PINC == 0b00101111){
                 printf("Finish game");
                 attempt = 2;
             }
@@ -158,25 +156,27 @@ int main (void){
 			printf("Current score: ");
 			printf("%d \n",score);
             joystick();
+			attempt=0; 
             result = 0;
         }
 		if (result == 2){
-            _delay_ms(5000);
 			printf("Shoot now \n");
 			attempt ++;
             result = 0;
 		}
 	    }
         attempt = 0;
-        printf("You have used all your attempts. Press Button 2 if you want to start playing again");
+        printf("You have used all your attempts. Press Button 1 if you want to start playing again");
         zero();
     }
 
-    if (PINC == 0b00011111){ //Third button pressed
+    
+
+    if (PINC == 0b00011111){
       printf("Third button pressed");
       joystick();
     }
-    if (PINC == 0b00111011){//Fourth button pressed
+    if (PINC == 0b00111011){
       printf("Fourth button pressed");
       zero();
     }
