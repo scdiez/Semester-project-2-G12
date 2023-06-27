@@ -68,7 +68,7 @@ int buttonstate = 1;
 
 //speaker functions
 void usart_init(void);
-void usart_send (unsigned char data);
+void usart_send (unsigned char);
 
 //variables for motor movement 
 int target_x,target_y, move_x, move_y;
@@ -111,7 +111,7 @@ int main (void){
 		printf("The basketball hoop will now move. You get 3 attempts to score. \n");
       	change_position();
       
-      	printf("You have 8 seconds to get the ball in \n");
+      	printf("You have 3 seconds to get the ball in \n");
 
       	while (attempt<=2){
 		while(result == 0){
@@ -197,14 +197,14 @@ int main (void){
 
       	change_position();
       
-      	printf("You have 8 seconds to get the ball in \n");
+      	printf("You have 3 seconds to get the ball in \n");
       	
 		while (attempt<=2){
 		while(result == 0){
             detect_ball();
             if(PINC == 0b00101111){
                 printf("Finish game");
-                attempt = 2;
+                attempt = 2; //detecting loop ends and code jumps to finish
             }
         }
         if (result == 1){ //object is detected
