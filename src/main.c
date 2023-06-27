@@ -154,7 +154,6 @@ int main (void){
 					result = 0;
 				}
 				if (result == 2){ //ball didn't go in
-					_delay_ms(5000);
 					usart_send (3); //try to shoot again
 					_delay_ms(2000);
 					usart_send(57); //beep
@@ -269,7 +268,6 @@ int main (void){
 				result = 0;
 			}
 			if (result == 2){
-				_delay_ms(5000);
 				usart_send (3); //try to shoot again
 				_delay_ms(2000);
 				attempt ++;
@@ -319,7 +317,6 @@ int main (void){
 				result = 0;
 			}
 			if (result == 2){
-				_delay_ms(5000);
 				usart_send (3); //try to shoot again
 				_delay_ms(2000);
 				attempt ++;
