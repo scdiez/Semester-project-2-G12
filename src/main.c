@@ -98,17 +98,150 @@ int main (void){
     DDRC = 0xF0;
     PORTC = 0x3F;
 
-  //PRESS ANY BUTTON TO START THE GAME
+	printf("Press any button to start the game \n");
+	printf("Press button 1 for no vision single player mode \n");
+	printf("Press button 2 for no vision multiplayer mode \n");
+	printf("Press button 3 for vision single player mode \n");
+	printf("Press button 4 for vision multiplayer mode \n");
 
   while (1){
-    if (PINC == 0b00110111){ //First button pressed
-      printf("You've selected vision single player \n");
-      printf("The basketball hoop will now move. You get 3 attempts to score. \n");
-      printf("Press Button 1 if you want to stop playing. Good Luck! \n");
-      change_position();
+    if (PINC == 0b00111011){ //First button pressed 
+		printf("You've selected no vision single player mode \n");
+		printf("Press button 1 when you want to stop playing  \n");
+		printf("The basketball hoop will now move. You get 3 attempts to score. \n");
+      	change_position();
       
-      printf("You have 8 seconds to get the ball in \n");
-      while (attempt<=2){
+      	printf("You have 8 seconds to get the ball in \n");
+
+      	while (attempt<=2){
+		while(result == 0){
+            detect_ball();
+            if(PINC == 0b00111011){
+                printf("Finish game");
+                attempt = 2;
+            }
+        }
+        if (result == 1){ //object is detected
+            score++; //Incremement the score when an object is detected
+			printf("You scored a point \n");
+			printf("Current score: ");
+			printf("%d \n",score);
+
+            change_position();
+
+			printf("Beep \n");
+			attempt=0; 
+            result = 0;
+        }
+		if (result == 2){ //ball didn't go in
+			printf("Shoot now \n");
+			printf("Beep \n");
+			attempt ++;
+            result = 0;
+		}
+	    }
+        attempt = 0;
+        printf("You have used all your attempts. \n");
+		printf("Your score is: ");
+		printf("%d \n", score);
+		printf("Press button 1 if you want to start playing again, or another button for another mod \n");
+		zero();
+    }
+	if (PINC == 0b00011111){ //Second button pressed 
+      	printf("You've selected no vision multi player mode \n");
+		printf("Press button 2 when you want to stop playing  \n");
+		printf("Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score. \n");
+
+      	joystick();
+
+      	printf("You have 3 seconds to get the ball in \n");
+		printf("beep \n");
+
+      	while (attempt<=2){
+		while(result == 0){
+            detect_ball();
+            if(PINC == 0b00011111){
+                printf("Finish game");
+                attempt = 2;
+            }
+        }
+        if (result == 1){
+            score++; //Incremement the score when an object is detected
+			printf("You scored a point \n");
+			printf("Current score: ");
+			printf("%d \n",score);
+			printf("Play again \n");
+            joystick();
+			printf("beep \n");
+			attempt=0; 
+            result = 0;
+        }
+		if (result == 2){
+			printf("Shoot now \n");
+			attempt ++;
+            result = 0;
+		}
+	    }
+        attempt = 0;
+		printf("You have used all your attempts. \n");
+		printf("Your score is: ");
+		printf("%d \n", score);
+        printf("You have used all your attempts. Press Button 1 if you want to start playing again");
+        zero();
+    }
+
+    if (PINC == 0b00101111){ //Third button pressed 
+		printf("You've selected vision single player mode \n");
+		printf("Press button 3 when you want to stop playing\n");
+		printf("The basketball hoop will now move. You get 3 attempts to score. \n");
+
+      	change_position();
+      
+      	printf("You have 8 seconds to get the ball in \n");
+      	
+		while (attempt<=2){
+		while(result == 0){
+            detect_ball();
+            if(PINC == 0b00101111){
+                printf("Finish game");
+                attempt = 2;
+            }
+        }
+        if (result == 1){ //object is detected
+            score++; //Incremement the score when an object is detected
+			printf("You scored a point \n");
+			printf("Current score: ");
+			printf("%d \n",score);
+
+            change_position();
+
+			attempt=0; 
+            result = 0;
+        }
+		if (result == 2){ //ball didn't go in
+			printf("Shoot now \n");
+
+			attempt ++;
+            result = 0;
+		}
+	    }
+        attempt = 0;
+        printf("You have used all your attempts. \n");
+		printf("Your score is: ");
+		printf("%d \n", score);
+		printf("Press button 3 if you want to start playing again, or another button for another mode \n");
+		zero();
+    }
+
+	if (PINC == 0b00110111){ //Fourth button pressed 
+      	printf("You've selected vision multi player mode \n");
+		printf("Press button 4 when you want to stop playing \n");
+		printf("Move the basket with the joystick. Press the button to fix the position. You get 3 attempts to score. \n");
+
+      	joystick();
+
+      	printf("You have 3 seconds to get the ball in \n");
+      	while (attempt<=2){
 		while(result == 0){
             detect_ball();
             if(PINC == 0b00110111){
@@ -121,40 +254,7 @@ int main (void){
 			printf("You scored a point \n");
 			printf("Current score: ");
 			printf("%d \n",score);
-            change_position();
-			attempt=0; 
-            result = 0;
-        }
-		if (result == 2){
-			printf("Shoot now \n");
-			attempt ++;
-            result = 0;
-		}
-	    }
-        attempt = 0;
-        printf("You have used all your attempts. Press Button 1 if you want to start playing again");
-        zero();
-    }
-	if (PINC == 0b00101111){ //Second button pressed
-      printf("You've selected vision single player \n");
-      printf("The basketball hoop will now move. You get 3 attempts to score. \n");
-      printf("Press Button 1 if you want to stop playing. Good Luck! \n");
-      joystick();
-      
-      printf("You have 3 seconds to get the ball in \n");
-      while (attempt<=2){
-		while(result == 0){
-            detect_ball();
-            if(PINC == 0b00101111){
-                printf("Finish game");
-                attempt = 2;
-            }
-        }
-        if (result == 1){
-            score++; //Incremement the score when an object is detected
-			printf("You scored a point \n");
-			printf("Current score: ");
-			printf("%d \n",score);
+			printf("Play again \n");
             joystick();
 			attempt=0; 
             result = 0;
@@ -166,19 +266,11 @@ int main (void){
 		}
 	    }
         attempt = 0;
-        printf("You have used all your attempts. Press Button 1 if you want to start playing again");
+		printf("You have used all your attempts. \n");
+		printf("Your score is: ");
+		printf("%d \n", score);
+        printf("Press button 4 if you want to start playing again, or another button for another mode. \n");
         zero();
-    }
-
-    
-
-    if (PINC == 0b00011111){
-      printf("Third button pressed");
-      joystick();
-    }
-    if (PINC == 0b00111011){
-      printf("Fourth button pressed");
-      zero();
     }
   }
 
@@ -195,23 +287,15 @@ void joystick (void){
 
         if(voltagex >=1000){ //set threshold to start moving
             move_right(600,200);
-            printf("moveright \n");
-            printf("%d", current_x);
         }
         if(voltagex <=50){
             move_left(600,200);
-            printf("moveleft \n");
-            printf("%d", current_x);
         }
         if(voltagey >=1000){
             move_up(600,200);
-            printf("moveup \n");
-            printf("%d", current_y);
         }
         if(voltagey <=50){
             move_down(600,200);
-            printf("movedown \n");
-            printf("%d", current_y);
         }
 
         if (!(PINB & (1 << PINB4))) { // Button is active low, so it is pressed when the pin reads low
@@ -325,7 +409,7 @@ int detect_ball (void){
 			result = 1;
         }
 
-        if (distance > 9.5 && counter>= 120) { //edit counter value for a longer time for shooting 
+        if (distance > 9.5 && counter>= 240) { //edit counter value for a longer time for shooting 
             result = 2;
 			counter = 0;
         }
