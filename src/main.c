@@ -83,8 +83,8 @@ int main (void){
     sei(); // Enable global interrupts
 
     //Joystick and sensor  configuration
-    DDRB = 0b00100001;
-    PORTB = 0b00110010;
+    DDRB = 0b00000001; //trig pin (B0) output, echo pin input, joystick button (B4) input
+    PORTB = 0b00010010; //pullup on joystick button and echo pin
 
     //Joystick configuration
     ADMUX = (1<<REFS0); //Select vref = avcc
